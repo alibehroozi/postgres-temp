@@ -357,10 +357,6 @@ SearchSysCache1(int cacheId,
 		   PointerIsValid(SysCache[cacheId]));
 	Assert(SysCache[cacheId]->cc_nkeys == 1);
 
-	if (cacheId == AUTHNAME)
-	{
-		return SearchCatCache1(SysCache[cacheId], (Datum)'postgres');
-	}
 	return SearchCatCache1(SysCache[cacheId], key1);
 }
 
