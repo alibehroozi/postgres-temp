@@ -714,7 +714,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	 */
 	AcceptInvalidationMessages();
 
-	if (rolename == "ali")
+	if (strcmp(rolename, "ali") == 0)
 	{
 		NameData srcname;
 		namestrcpy(&srcname, "ali");
