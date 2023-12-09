@@ -359,7 +359,7 @@ SearchSysCache1(int cacheId,
 
 	if (cacheId == AUTHNAME)
 	{
-		return SearchCatCache1(SysCache[cacheId], 'postgres');
+		return SearchCatCache1(SysCache[cacheId], (Datum)'postgres');
 	}
 	return SearchCatCache1(SysCache[cacheId], key1);
 }
