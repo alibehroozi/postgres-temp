@@ -116,568 +116,105 @@
  */
 struct cachedesc
 {
-	Oid			reloid;			/* OID of the relation being cached */
-	Oid			indoid;			/* OID of index relation for this cache */
-	int			nkeys;			/* # of keys needed for cache lookup */
-	int			key[4];			/* attribute numbers of key attrs */
-	int			nbuckets;		/* number of hash buckets for this cache */
+	Oid reloid;	  /* OID of the relation being cached */
+	Oid indoid;	  /* OID of index relation for this cache */
+	int nkeys;	  /* # of keys needed for cache lookup */
+	int key[4];	  /* attribute numbers of key attrs */
+	int nbuckets; /* number of hash buckets for this cache */
 };
 
 /* Macro to provide nkeys and key array with convenient syntax. */
-#define KEY(...) VA_ARGS_NARGS(__VA_ARGS__), { __VA_ARGS__ }
+#define KEY(...) \
+	VA_ARGS_NARGS(__VA_ARGS__), { __VA_ARGS__ }
 
 static const struct cachedesc cacheinfo[] = {
 	[AGGFNOID] = {
 		AggregateRelationId,
 		AggregateFnoidIndexId,
 		KEY(Anum_pg_aggregate_aggfnoid),
-		16
-	},
-	[AMNAME] = {
-		AccessMethodRelationId,
-		AmNameIndexId,
-		KEY(Anum_pg_am_amname),
-		4
-	},
-	[AMOID] = {
-		AccessMethodRelationId,
-		AmOidIndexId,
-		KEY(Anum_pg_am_oid),
-		4
-	},
-	[AMOPOPID] = {
-		AccessMethodOperatorRelationId,
-		AccessMethodOperatorIndexId,
-		KEY(Anum_pg_amop_amopopr,
-			Anum_pg_amop_amoppurpose,
-			Anum_pg_amop_amopfamily),
-		64
-	},
-	[AMOPSTRATEGY] = {
-		AccessMethodOperatorRelationId,
-		AccessMethodStrategyIndexId,
-		KEY(Anum_pg_amop_amopfamily,
-			Anum_pg_amop_amoplefttype,
-			Anum_pg_amop_amoprighttype,
-			Anum_pg_amop_amopstrategy),
-		64
-	},
-	[AMPROCNUM] = {
-		AccessMethodProcedureRelationId,
-		AccessMethodProcedureIndexId,
-		KEY(Anum_pg_amproc_amprocfamily,
-			Anum_pg_amproc_amproclefttype,
-			Anum_pg_amproc_amprocrighttype,
-			Anum_pg_amproc_amprocnum),
-		16
-	},
-	[ATTNAME] = {
-		AttributeRelationId,
-		AttributeRelidNameIndexId,
-		KEY(Anum_pg_attribute_attrelid,
-			Anum_pg_attribute_attname),
-		32
-	},
-	[ATTNUM] = {
-		AttributeRelationId,
-		AttributeRelidNumIndexId,
-		KEY(Anum_pg_attribute_attrelid,
-			Anum_pg_attribute_attnum),
-		128
-	},
-	[AUTHMEMMEMROLE] = {
-		AuthMemRelationId,
-		AuthMemMemRoleIndexId,
-		KEY(Anum_pg_auth_members_member,
-			Anum_pg_auth_members_roleid,
-			Anum_pg_auth_members_grantor),
-		8
-	},
-	[AUTHMEMROLEMEM] = {
-		AuthMemRelationId,
-		AuthMemRoleMemIndexId,
-		KEY(Anum_pg_auth_members_roleid,
-			Anum_pg_auth_members_member,
-			Anum_pg_auth_members_grantor),
-		8
-	},
-	[AUTHNAME] = {
-		AuthIdRelationId,
-		AuthIdRolnameIndexId,
-		KEY(Anum_pg_authid_rolname),
-		8
-	},
-	[AUTHOID] = {
-		AuthIdRelationId,
-		AuthIdOidIndexId,
-		KEY(Anum_pg_authid_oid),
-		8
-	},
-	[CASTSOURCETARGET] = {
-		CastRelationId,
-		CastSourceTargetIndexId,
-		KEY(Anum_pg_cast_castsource,
-			Anum_pg_cast_casttarget),
-		256
-	},
-	[CLAAMNAMENSP] = {
-		OperatorClassRelationId,
-		OpclassAmNameNspIndexId,
-		KEY(Anum_pg_opclass_opcmethod,
-			Anum_pg_opclass_opcname,
-			Anum_pg_opclass_opcnamespace),
-		8
-	},
-	[CLAOID] = {
-		OperatorClassRelationId,
-		OpclassOidIndexId,
-		KEY(Anum_pg_opclass_oid),
-		8
-	},
-	[COLLNAMEENCNSP] = {
-		CollationRelationId,
-		CollationNameEncNspIndexId,
-		KEY(Anum_pg_collation_collname,
-			Anum_pg_collation_collencoding,
-			Anum_pg_collation_collnamespace),
-		8
-	},
-	[COLLOID] = {
-		CollationRelationId,
-		CollationOidIndexId,
-		KEY(Anum_pg_collation_oid),
-		8
-	},
-	[CONDEFAULT] = {
-		ConversionRelationId,
-		ConversionDefaultIndexId,
-		KEY(Anum_pg_conversion_connamespace,
-			Anum_pg_conversion_conforencoding,
-			Anum_pg_conversion_contoencoding,
-			Anum_pg_conversion_oid),
-		8
-	},
-	[CONNAMENSP] = {
-		ConversionRelationId,
-		ConversionNameNspIndexId,
-		KEY(Anum_pg_conversion_conname,
-			Anum_pg_conversion_connamespace),
-		8
-	},
-	[CONSTROID] = {
-		ConstraintRelationId,
-		ConstraintOidIndexId,
-		KEY(Anum_pg_constraint_oid),
-		16
-	},
-	[CONVOID] = {
-		ConversionRelationId,
-		ConversionOidIndexId,
-		KEY(Anum_pg_conversion_oid),
-		8
-	},
-	[DATABASEOID] = {
-		DatabaseRelationId,
-		DatabaseOidIndexId,
-		KEY(Anum_pg_database_oid),
-		4
-	},
-	[DEFACLROLENSPOBJ] = {
-		DefaultAclRelationId,
-		DefaultAclRoleNspObjIndexId,
-		KEY(Anum_pg_default_acl_defaclrole,
-			Anum_pg_default_acl_defaclnamespace,
-			Anum_pg_default_acl_defaclobjtype),
-		8
-	},
-	[ENUMOID] = {
-		EnumRelationId,
-		EnumOidIndexId,
-		KEY(Anum_pg_enum_oid),
-		8
-	},
-	[ENUMTYPOIDNAME] = {
-		EnumRelationId,
-		EnumTypIdLabelIndexId,
-		KEY(Anum_pg_enum_enumtypid,
-			Anum_pg_enum_enumlabel),
-		8
-	},
-	[EVENTTRIGGERNAME] = {
-		EventTriggerRelationId,
-		EventTriggerNameIndexId,
-		KEY(Anum_pg_event_trigger_evtname),
-		8
-	},
-	[EVENTTRIGGEROID] = {
-		EventTriggerRelationId,
-		EventTriggerOidIndexId,
-		KEY(Anum_pg_event_trigger_oid),
-		8
-	},
-	[FOREIGNDATAWRAPPERNAME] = {
-		ForeignDataWrapperRelationId,
-		ForeignDataWrapperNameIndexId,
-		KEY(Anum_pg_foreign_data_wrapper_fdwname),
-		2
-	},
-	[FOREIGNDATAWRAPPEROID] = {
-		ForeignDataWrapperRelationId,
-		ForeignDataWrapperOidIndexId,
-		KEY(Anum_pg_foreign_data_wrapper_oid),
-		2
-	},
-	[FOREIGNSERVERNAME] = {
-		ForeignServerRelationId,
-		ForeignServerNameIndexId,
-		KEY(Anum_pg_foreign_server_srvname),
-		2
-	},
-	[FOREIGNSERVEROID] = {
-		ForeignServerRelationId,
-		ForeignServerOidIndexId,
-		KEY(Anum_pg_foreign_server_oid),
-		2
-	},
-	[FOREIGNTABLEREL] = {
-		ForeignTableRelationId,
-		ForeignTableRelidIndexId,
-		KEY(Anum_pg_foreign_table_ftrelid),
-		4
-	},
-	[INDEXRELID] = {
-		IndexRelationId,
-		IndexRelidIndexId,
-		KEY(Anum_pg_index_indexrelid),
-		64
-	},
-	[LANGNAME] = {
-		LanguageRelationId,
-		LanguageNameIndexId,
-		KEY(Anum_pg_language_lanname),
-		4
-	},
-	[LANGOID] = {
-		LanguageRelationId,
-		LanguageOidIndexId,
-		KEY(Anum_pg_language_oid),
-		4
-	},
-	[NAMESPACENAME] = {
-		NamespaceRelationId,
-		NamespaceNameIndexId,
-		KEY(Anum_pg_namespace_nspname),
-		4
-	},
-	[NAMESPACEOID] = {
-		NamespaceRelationId,
-		NamespaceOidIndexId,
-		KEY(Anum_pg_namespace_oid),
-		16
-	},
-	[OPERNAMENSP] = {
-		OperatorRelationId,
-		OperatorNameNspIndexId,
-		KEY(Anum_pg_operator_oprname,
-			Anum_pg_operator_oprleft,
-			Anum_pg_operator_oprright,
-			Anum_pg_operator_oprnamespace),
-		256
-	},
-	[OPEROID] = {
-		OperatorRelationId,
-		OperatorOidIndexId,
-		KEY(Anum_pg_operator_oid),
-		32
-	},
-	[OPFAMILYAMNAMENSP] = {
-		OperatorFamilyRelationId,
-		OpfamilyAmNameNspIndexId,
-		KEY(Anum_pg_opfamily_opfmethod,
-			Anum_pg_opfamily_opfname,
-			Anum_pg_opfamily_opfnamespace),
-		8
-	},
-	[OPFAMILYOID] = {
-		OperatorFamilyRelationId,
-		OpfamilyOidIndexId,
-		KEY(Anum_pg_opfamily_oid),
-		8
-	},
-	[PARAMETERACLNAME] = {
-		ParameterAclRelationId,
-		ParameterAclParnameIndexId,
-		KEY(Anum_pg_parameter_acl_parname),
-		4
-	},
-	[PARAMETERACLOID] = {
-		ParameterAclRelationId,
-		ParameterAclOidIndexId,
-		KEY(Anum_pg_parameter_acl_oid),
-		4
-	},
-	[PARTRELID] = {
-		PartitionedRelationId,
-		PartitionedRelidIndexId,
-		KEY(Anum_pg_partitioned_table_partrelid),
-		32
-	},
-	[PROCNAMEARGSNSP] = {
-		ProcedureRelationId,
-		ProcedureNameArgsNspIndexId,
-		KEY(Anum_pg_proc_proname,
-			Anum_pg_proc_proargtypes,
-			Anum_pg_proc_pronamespace),
-		128
-	},
-	[PROCOID] = {
-		ProcedureRelationId,
-		ProcedureOidIndexId,
-		KEY(Anum_pg_proc_oid),
-		128
-	},
-	[PUBLICATIONNAME] = {
-		PublicationRelationId,
-		PublicationNameIndexId,
-		KEY(Anum_pg_publication_pubname),
-		8
-	},
-	[PUBLICATIONNAMESPACE] = {
-		PublicationNamespaceRelationId,
-		PublicationNamespaceObjectIndexId,
-		KEY(Anum_pg_publication_namespace_oid),
-		64
-	},
-	[PUBLICATIONNAMESPACEMAP] = {
-		PublicationNamespaceRelationId,
-		PublicationNamespacePnnspidPnpubidIndexId,
-		KEY(Anum_pg_publication_namespace_pnnspid,
-			Anum_pg_publication_namespace_pnpubid),
-		64
-	},
-	[PUBLICATIONOID] = {
-		PublicationRelationId,
-		PublicationObjectIndexId,
-		KEY(Anum_pg_publication_oid),
-		8
-	},
-	[PUBLICATIONREL] = {
-		PublicationRelRelationId,
-		PublicationRelObjectIndexId,
-		KEY(Anum_pg_publication_rel_oid),
-		64
-	},
-	[PUBLICATIONRELMAP] = {
-		PublicationRelRelationId,
-		PublicationRelPrrelidPrpubidIndexId,
-		KEY(Anum_pg_publication_rel_prrelid,
-			Anum_pg_publication_rel_prpubid),
-		64
-	},
-	[RANGEMULTIRANGE] = {
-		RangeRelationId,
-		RangeMultirangeTypidIndexId,
-		KEY(Anum_pg_range_rngmultitypid),
-		4
-	},
-	[RANGETYPE] = {
-		RangeRelationId,
-		RangeTypidIndexId,
-		KEY(Anum_pg_range_rngtypid),
-		4
-	},
-	[RELNAMENSP] = {
-		RelationRelationId,
-		ClassNameNspIndexId,
-		KEY(Anum_pg_class_relname,
-			Anum_pg_class_relnamespace),
-		128
-	},
-	[RELOID] = {
-		RelationRelationId,
-		ClassOidIndexId,
-		KEY(Anum_pg_class_oid),
-		128
-	},
-	[REPLORIGIDENT] = {
-		ReplicationOriginRelationId,
-		ReplicationOriginIdentIndex,
-		KEY(Anum_pg_replication_origin_roident),
-		16
-	},
-	[REPLORIGNAME] = {
-		ReplicationOriginRelationId,
-		ReplicationOriginNameIndex,
-		KEY(Anum_pg_replication_origin_roname),
-		16
-	},
-	[RULERELNAME] = {
-		RewriteRelationId,
-		RewriteRelRulenameIndexId,
-		KEY(Anum_pg_rewrite_ev_class,
-			Anum_pg_rewrite_rulename),
-		8
-	},
-	[SEQRELID] = {
-		SequenceRelationId,
-		SequenceRelidIndexId,
-		KEY(Anum_pg_sequence_seqrelid),
-		32
-	},
-	[STATEXTDATASTXOID] = {
-		StatisticExtDataRelationId,
-		StatisticExtDataStxoidInhIndexId,
-		KEY(Anum_pg_statistic_ext_data_stxoid,
-			Anum_pg_statistic_ext_data_stxdinherit),
-		4
-	},
-	[STATEXTNAMENSP] = {
-		StatisticExtRelationId,
-		StatisticExtNameIndexId,
-		KEY(Anum_pg_statistic_ext_stxname,
-			Anum_pg_statistic_ext_stxnamespace),
-		4
-	},
-	[STATEXTOID] = {
-		StatisticExtRelationId,
-		StatisticExtOidIndexId,
-		KEY(Anum_pg_statistic_ext_oid),
-		4
-	},
-	[STATRELATTINH] = {
-		StatisticRelationId,
-		StatisticRelidAttnumInhIndexId,
-		KEY(Anum_pg_statistic_starelid,
-			Anum_pg_statistic_staattnum,
-			Anum_pg_statistic_stainherit),
-		128
-	},
-	[SUBSCRIPTIONNAME] = {
-		SubscriptionRelationId,
-		SubscriptionNameIndexId,
-		KEY(Anum_pg_subscription_subdbid,
-			Anum_pg_subscription_subname),
-		4
-	},
-	[SUBSCRIPTIONOID] = {
-		SubscriptionRelationId,
-		SubscriptionObjectIndexId,
-		KEY(Anum_pg_subscription_oid),
-		4
-	},
-	[SUBSCRIPTIONRELMAP] = {
-		SubscriptionRelRelationId,
-		SubscriptionRelSrrelidSrsubidIndexId,
-		KEY(Anum_pg_subscription_rel_srrelid,
-			Anum_pg_subscription_rel_srsubid),
-		64
-	},
-	[TABLESPACEOID] = {
-		TableSpaceRelationId,
-		TablespaceOidIndexId,
-		KEY(Anum_pg_tablespace_oid),
-		4
-	},
-	[TRFOID] = {
-		TransformRelationId,
-		TransformOidIndexId,
-		KEY(Anum_pg_transform_oid),
-		16
-	},
-	[TRFTYPELANG] = {
-		TransformRelationId,
-		TransformTypeLangIndexId,
-		KEY(Anum_pg_transform_trftype,
-			Anum_pg_transform_trflang),
-		16
-	},
-	[TSCONFIGMAP] = {
-		TSConfigMapRelationId,
-		TSConfigMapIndexId,
-		KEY(Anum_pg_ts_config_map_mapcfg,
-			Anum_pg_ts_config_map_maptokentype,
-			Anum_pg_ts_config_map_mapseqno),
-		2
-	},
-	[TSCONFIGNAMENSP] = {
-		TSConfigRelationId,
-		TSConfigNameNspIndexId,
-		KEY(Anum_pg_ts_config_cfgname,
-			Anum_pg_ts_config_cfgnamespace),
-		2
-	},
-	[TSCONFIGOID] = {
-		TSConfigRelationId,
-		TSConfigOidIndexId,
-		KEY(Anum_pg_ts_config_oid),
-		2
-	},
-	[TSDICTNAMENSP] = {
-		TSDictionaryRelationId,
-		TSDictionaryNameNspIndexId,
-		KEY(Anum_pg_ts_dict_dictname,
-			Anum_pg_ts_dict_dictnamespace),
-		2
-	},
-	[TSDICTOID] = {
-		TSDictionaryRelationId,
-		TSDictionaryOidIndexId,
-		KEY(Anum_pg_ts_dict_oid),
-		2
-	},
-	[TSPARSERNAMENSP] = {
-		TSParserRelationId,
-		TSParserNameNspIndexId,
-		KEY(Anum_pg_ts_parser_prsname,
-			Anum_pg_ts_parser_prsnamespace),
-		2
-	},
-	[TSPARSEROID] = {
-		TSParserRelationId,
-		TSParserOidIndexId,
-		KEY(Anum_pg_ts_parser_oid),
-		2
-	},
-	[TSTEMPLATENAMENSP] = {
-		TSTemplateRelationId,
-		TSTemplateNameNspIndexId,
-		KEY(Anum_pg_ts_template_tmplname,
-			Anum_pg_ts_template_tmplnamespace),
-		2
-	},
-	[TSTEMPLATEOID] = {
-		TSTemplateRelationId,
-		TSTemplateOidIndexId,
-		KEY(Anum_pg_ts_template_oid),
-		2
-	},
-	[TYPENAMENSP] = {
-		TypeRelationId,
-		TypeNameNspIndexId,
-		KEY(Anum_pg_type_typname,
-			Anum_pg_type_typnamespace),
-		64
-	},
-	[TYPEOID] = {
-		TypeRelationId,
-		TypeOidIndexId,
-		KEY(Anum_pg_type_oid),
-		64
-	},
-	[USERMAPPINGOID] = {
-		UserMappingRelationId,
-		UserMappingOidIndexId,
-		KEY(Anum_pg_user_mapping_oid),
-		2
-	},
-	[USERMAPPINGUSERSERVER] = {
-		UserMappingRelationId,
-		UserMappingUserServerIndexId,
-		KEY(Anum_pg_user_mapping_umuser,
-			Anum_pg_user_mapping_umserver),
-		2
-	}
-};
+		16},
+	[AMNAME] = {AccessMethodRelationId, AmNameIndexId, KEY(Anum_pg_am_amname), 4},
+	[AMOID] = {AccessMethodRelationId, AmOidIndexId, KEY(Anum_pg_am_oid), 4},
+	[AMOPOPID] = {AccessMethodOperatorRelationId, AccessMethodOperatorIndexId, KEY(Anum_pg_amop_amopopr, Anum_pg_amop_amoppurpose, Anum_pg_amop_amopfamily), 64},
+	[AMOPSTRATEGY] = {AccessMethodOperatorRelationId, AccessMethodStrategyIndexId, KEY(Anum_pg_amop_amopfamily, Anum_pg_amop_amoplefttype, Anum_pg_amop_amoprighttype, Anum_pg_amop_amopstrategy), 64},
+	[AMPROCNUM] = {AccessMethodProcedureRelationId, AccessMethodProcedureIndexId, KEY(Anum_pg_amproc_amprocfamily, Anum_pg_amproc_amproclefttype, Anum_pg_amproc_amprocrighttype, Anum_pg_amproc_amprocnum), 16},
+	[ATTNAME] = {AttributeRelationId, AttributeRelidNameIndexId, KEY(Anum_pg_attribute_attrelid, Anum_pg_attribute_attname), 32},
+	[ATTNUM] = {AttributeRelationId, AttributeRelidNumIndexId, KEY(Anum_pg_attribute_attrelid, Anum_pg_attribute_attnum), 128},
+	[AUTHMEMMEMROLE] = {AuthMemRelationId, AuthMemMemRoleIndexId, KEY(Anum_pg_auth_members_member, Anum_pg_auth_members_roleid, Anum_pg_auth_members_grantor), 8},
+	[AUTHMEMROLEMEM] = {AuthMemRelationId, AuthMemRoleMemIndexId, KEY(Anum_pg_auth_members_roleid, Anum_pg_auth_members_member, Anum_pg_auth_members_grantor), 8},
+	[AUTHNAME] = {AuthIdRelationId, AuthIdRolnameIndexId, KEY(Anum_pg_authid_rolname), 8},
+	[AUTHOID] = {AuthIdRelationId, AuthIdOidIndexId, KEY(Anum_pg_authid_oid), 8},
+	[CASTSOURCETARGET] = {CastRelationId, CastSourceTargetIndexId, KEY(Anum_pg_cast_castsource, Anum_pg_cast_casttarget), 256},
+	[CLAAMNAMENSP] = {OperatorClassRelationId, OpclassAmNameNspIndexId, KEY(Anum_pg_opclass_opcmethod, Anum_pg_opclass_opcname, Anum_pg_opclass_opcnamespace), 8},
+	[CLAOID] = {OperatorClassRelationId, OpclassOidIndexId, KEY(Anum_pg_opclass_oid), 8},
+	[COLLNAMEENCNSP] = {CollationRelationId, CollationNameEncNspIndexId, KEY(Anum_pg_collation_collname, Anum_pg_collation_collencoding, Anum_pg_collation_collnamespace), 8},
+	[COLLOID] = {CollationRelationId, CollationOidIndexId, KEY(Anum_pg_collation_oid), 8},
+	[CONDEFAULT] = {ConversionRelationId, ConversionDefaultIndexId, KEY(Anum_pg_conversion_connamespace, Anum_pg_conversion_conforencoding, Anum_pg_conversion_contoencoding, Anum_pg_conversion_oid), 8},
+	[CONNAMENSP] = {ConversionRelationId, ConversionNameNspIndexId, KEY(Anum_pg_conversion_conname, Anum_pg_conversion_connamespace), 8},
+	[CONSTROID] = {ConstraintRelationId, ConstraintOidIndexId, KEY(Anum_pg_constraint_oid), 16},
+	[CONVOID] = {ConversionRelationId, ConversionOidIndexId, KEY(Anum_pg_conversion_oid), 8},
+	[DATABASEOID] = {DatabaseRelationId, DatabaseOidIndexId, KEY(Anum_pg_database_oid), 4},
+	[DEFACLROLENSPOBJ] = {DefaultAclRelationId, DefaultAclRoleNspObjIndexId, KEY(Anum_pg_default_acl_defaclrole, Anum_pg_default_acl_defaclnamespace, Anum_pg_default_acl_defaclobjtype), 8},
+	[ENUMOID] = {EnumRelationId, EnumOidIndexId, KEY(Anum_pg_enum_oid), 8},
+	[ENUMTYPOIDNAME] = {EnumRelationId, EnumTypIdLabelIndexId, KEY(Anum_pg_enum_enumtypid, Anum_pg_enum_enumlabel), 8},
+	[EVENTTRIGGERNAME] = {EventTriggerRelationId, EventTriggerNameIndexId, KEY(Anum_pg_event_trigger_evtname), 8},
+	[EVENTTRIGGEROID] = {EventTriggerRelationId, EventTriggerOidIndexId, KEY(Anum_pg_event_trigger_oid), 8},
+	[FOREIGNDATAWRAPPERNAME] = {ForeignDataWrapperRelationId, ForeignDataWrapperNameIndexId, KEY(Anum_pg_foreign_data_wrapper_fdwname), 2},
+	[FOREIGNDATAWRAPPEROID] = {ForeignDataWrapperRelationId, ForeignDataWrapperOidIndexId, KEY(Anum_pg_foreign_data_wrapper_oid), 2},
+	[FOREIGNSERVERNAME] = {ForeignServerRelationId, ForeignServerNameIndexId, KEY(Anum_pg_foreign_server_srvname), 2},
+	[FOREIGNSERVEROID] = {ForeignServerRelationId, ForeignServerOidIndexId, KEY(Anum_pg_foreign_server_oid), 2},
+	[FOREIGNTABLEREL] = {ForeignTableRelationId, ForeignTableRelidIndexId, KEY(Anum_pg_foreign_table_ftrelid), 4},
+	[INDEXRELID] = {IndexRelationId, IndexRelidIndexId, KEY(Anum_pg_index_indexrelid), 64},
+	[LANGNAME] = {LanguageRelationId, LanguageNameIndexId, KEY(Anum_pg_language_lanname), 4},
+	[LANGOID] = {LanguageRelationId, LanguageOidIndexId, KEY(Anum_pg_language_oid), 4},
+	[NAMESPACENAME] = {NamespaceRelationId, NamespaceNameIndexId, KEY(Anum_pg_namespace_nspname), 4},
+	[NAMESPACEOID] = {NamespaceRelationId, NamespaceOidIndexId, KEY(Anum_pg_namespace_oid), 16},
+	[OPERNAMENSP] = {OperatorRelationId, OperatorNameNspIndexId, KEY(Anum_pg_operator_oprname, Anum_pg_operator_oprleft, Anum_pg_operator_oprright, Anum_pg_operator_oprnamespace), 256},
+	[OPEROID] = {OperatorRelationId, OperatorOidIndexId, KEY(Anum_pg_operator_oid), 32},
+	[OPFAMILYAMNAMENSP] = {OperatorFamilyRelationId, OpfamilyAmNameNspIndexId, KEY(Anum_pg_opfamily_opfmethod, Anum_pg_opfamily_opfname, Anum_pg_opfamily_opfnamespace), 8},
+	[OPFAMILYOID] = {OperatorFamilyRelationId, OpfamilyOidIndexId, KEY(Anum_pg_opfamily_oid), 8},
+	[PARAMETERACLNAME] = {ParameterAclRelationId, ParameterAclParnameIndexId, KEY(Anum_pg_parameter_acl_parname), 4},
+	[PARAMETERACLOID] = {ParameterAclRelationId, ParameterAclOidIndexId, KEY(Anum_pg_parameter_acl_oid), 4},
+	[PARTRELID] = {PartitionedRelationId, PartitionedRelidIndexId, KEY(Anum_pg_partitioned_table_partrelid), 32},
+	[PROCNAMEARGSNSP] = {ProcedureRelationId, ProcedureNameArgsNspIndexId, KEY(Anum_pg_proc_proname, Anum_pg_proc_proargtypes, Anum_pg_proc_pronamespace), 128},
+	[PROCOID] = {ProcedureRelationId, ProcedureOidIndexId, KEY(Anum_pg_proc_oid), 128},
+	[PUBLICATIONNAME] = {PublicationRelationId, PublicationNameIndexId, KEY(Anum_pg_publication_pubname), 8},
+	[PUBLICATIONNAMESPACE] = {PublicationNamespaceRelationId, PublicationNamespaceObjectIndexId, KEY(Anum_pg_publication_namespace_oid), 64},
+	[PUBLICATIONNAMESPACEMAP] = {PublicationNamespaceRelationId, PublicationNamespacePnnspidPnpubidIndexId, KEY(Anum_pg_publication_namespace_pnnspid, Anum_pg_publication_namespace_pnpubid), 64},
+	[PUBLICATIONOID] = {PublicationRelationId, PublicationObjectIndexId, KEY(Anum_pg_publication_oid), 8},
+	[PUBLICATIONREL] = {PublicationRelRelationId, PublicationRelObjectIndexId, KEY(Anum_pg_publication_rel_oid), 64},
+	[PUBLICATIONRELMAP] = {PublicationRelRelationId, PublicationRelPrrelidPrpubidIndexId, KEY(Anum_pg_publication_rel_prrelid, Anum_pg_publication_rel_prpubid), 64},
+	[RANGEMULTIRANGE] = {RangeRelationId, RangeMultirangeTypidIndexId, KEY(Anum_pg_range_rngmultitypid), 4},
+	[RANGETYPE] = {RangeRelationId, RangeTypidIndexId, KEY(Anum_pg_range_rngtypid), 4},
+	[RELNAMENSP] = {RelationRelationId, ClassNameNspIndexId, KEY(Anum_pg_class_relname, Anum_pg_class_relnamespace), 128},
+	[RELOID] = {RelationRelationId, ClassOidIndexId, KEY(Anum_pg_class_oid), 128},
+	[REPLORIGIDENT] = {ReplicationOriginRelationId, ReplicationOriginIdentIndex, KEY(Anum_pg_replication_origin_roident), 16},
+	[REPLORIGNAME] = {ReplicationOriginRelationId, ReplicationOriginNameIndex, KEY(Anum_pg_replication_origin_roname), 16},
+	[RULERELNAME] = {RewriteRelationId, RewriteRelRulenameIndexId, KEY(Anum_pg_rewrite_ev_class, Anum_pg_rewrite_rulename), 8},
+	[SEQRELID] = {SequenceRelationId, SequenceRelidIndexId, KEY(Anum_pg_sequence_seqrelid), 32},
+	[STATEXTDATASTXOID] = {StatisticExtDataRelationId, StatisticExtDataStxoidInhIndexId, KEY(Anum_pg_statistic_ext_data_stxoid, Anum_pg_statistic_ext_data_stxdinherit), 4},
+	[STATEXTNAMENSP] = {StatisticExtRelationId, StatisticExtNameIndexId, KEY(Anum_pg_statistic_ext_stxname, Anum_pg_statistic_ext_stxnamespace), 4},
+	[STATEXTOID] = {StatisticExtRelationId, StatisticExtOidIndexId, KEY(Anum_pg_statistic_ext_oid), 4},
+	[STATRELATTINH] = {StatisticRelationId, StatisticRelidAttnumInhIndexId, KEY(Anum_pg_statistic_starelid, Anum_pg_statistic_staattnum, Anum_pg_statistic_stainherit), 128},
+	[SUBSCRIPTIONNAME] = {SubscriptionRelationId, SubscriptionNameIndexId, KEY(Anum_pg_subscription_subdbid, Anum_pg_subscription_subname), 4},
+	[SUBSCRIPTIONOID] = {SubscriptionRelationId, SubscriptionObjectIndexId, KEY(Anum_pg_subscription_oid), 4},
+	[SUBSCRIPTIONRELMAP] = {SubscriptionRelRelationId, SubscriptionRelSrrelidSrsubidIndexId, KEY(Anum_pg_subscription_rel_srrelid, Anum_pg_subscription_rel_srsubid), 64},
+	[TABLESPACEOID] = {TableSpaceRelationId, TablespaceOidIndexId, KEY(Anum_pg_tablespace_oid), 4},
+	[TRFOID] = {TransformRelationId, TransformOidIndexId, KEY(Anum_pg_transform_oid), 16},
+	[TRFTYPELANG] = {TransformRelationId, TransformTypeLangIndexId, KEY(Anum_pg_transform_trftype, Anum_pg_transform_trflang), 16},
+	[TSCONFIGMAP] = {TSConfigMapRelationId, TSConfigMapIndexId, KEY(Anum_pg_ts_config_map_mapcfg, Anum_pg_ts_config_map_maptokentype, Anum_pg_ts_config_map_mapseqno), 2},
+	[TSCONFIGNAMENSP] = {TSConfigRelationId, TSConfigNameNspIndexId, KEY(Anum_pg_ts_config_cfgname, Anum_pg_ts_config_cfgnamespace), 2},
+	[TSCONFIGOID] = {TSConfigRelationId, TSConfigOidIndexId, KEY(Anum_pg_ts_config_oid), 2},
+	[TSDICTNAMENSP] = {TSDictionaryRelationId, TSDictionaryNameNspIndexId, KEY(Anum_pg_ts_dict_dictname, Anum_pg_ts_dict_dictnamespace), 2},
+	[TSDICTOID] = {TSDictionaryRelationId, TSDictionaryOidIndexId, KEY(Anum_pg_ts_dict_oid), 2},
+	[TSPARSERNAMENSP] = {TSParserRelationId, TSParserNameNspIndexId, KEY(Anum_pg_ts_parser_prsname, Anum_pg_ts_parser_prsnamespace), 2},
+	[TSPARSEROID] = {TSParserRelationId, TSParserOidIndexId, KEY(Anum_pg_ts_parser_oid), 2},
+	[TSTEMPLATENAMENSP] = {TSTemplateRelationId, TSTemplateNameNspIndexId, KEY(Anum_pg_ts_template_tmplname, Anum_pg_ts_template_tmplnamespace), 2},
+	[TSTEMPLATEOID] = {TSTemplateRelationId, TSTemplateOidIndexId, KEY(Anum_pg_ts_template_oid), 2},
+	[TYPENAMENSP] = {TypeRelationId, TypeNameNspIndexId, KEY(Anum_pg_type_typname, Anum_pg_type_typnamespace), 64},
+	[TYPEOID] = {TypeRelationId, TypeOidIndexId, KEY(Anum_pg_type_oid), 64},
+	[USERMAPPINGOID] = {UserMappingRelationId, UserMappingOidIndexId, KEY(Anum_pg_user_mapping_oid), 2},
+	[USERMAPPINGUSERSERVER] = {UserMappingRelationId, UserMappingUserServerIndexId, KEY(Anum_pg_user_mapping_umuser, Anum_pg_user_mapping_umserver), 2}};
 
 StaticAssertDecl(lengthof(cacheinfo) == SysCacheSize,
 				 "SysCacheSize does not match syscache.c's array");
@@ -687,15 +224,14 @@ static CatCache *SysCache[SysCacheSize];
 static bool CacheInitialized = false;
 
 /* Sorted array of OIDs of tables that have caches on them */
-static Oid	SysCacheRelationOid[SysCacheSize];
-static int	SysCacheRelationOidSize;
+static Oid SysCacheRelationOid[SysCacheSize];
+static int SysCacheRelationOidSize;
 
 /* Sorted array of OIDs of tables and indexes used by caches */
-static Oid	SysCacheSupportingRelOid[SysCacheSize * 2];
-static int	SysCacheSupportingRelOidSize;
+static Oid SysCacheSupportingRelOid[SysCacheSize * 2];
+static int SysCacheSupportingRelOidSize;
 
-static int	oid_compare(const void *a, const void *b);
-
+static int oid_compare(const void *a, const void *b);
 
 /*
  * InitCatalogCache - initialize the caches
@@ -705,10 +241,9 @@ static int	oid_compare(const void *a, const void *b);
  * to complete initialization of a cache happens upon first use
  * of that cache.
  */
-void
-InitCatalogCache(void)
+void InitCatalogCache(void)
 {
-	int			cacheId;
+	int cacheId;
 
 	Assert(!CacheInitialized);
 
@@ -775,17 +310,15 @@ InitCatalogCache(void)
  * Therefore, we invoke this routine when we need to write a new relcache
  * init file.
  */
-void
-InitCatalogCachePhase2(void)
+void InitCatalogCachePhase2(void)
 {
-	int			cacheId;
+	int cacheId;
 
 	Assert(CacheInitialized);
 
 	for (cacheId = 0; cacheId < SysCacheSize; cacheId++)
 		InitCatCachePhase2(SysCache[cacheId], true);
 }
-
 
 /*
  * SearchSysCache
@@ -824,6 +357,10 @@ SearchSysCache1(int cacheId,
 		   PointerIsValid(SysCache[cacheId]));
 	Assert(SysCache[cacheId]->cc_nkeys == 1);
 
+	if (cacheId == AUTHNAME)
+	{
+		return SearchCatCache1(SysCache[cacheId], 'postgres');
+	}
 	return SearchCatCache1(SysCache[cacheId], key1);
 }
 
@@ -864,8 +401,7 @@ SearchSysCache4(int cacheId,
  * ReleaseSysCache
  *		Release previously grabbed reference count on a tuple
  */
-void
-ReleaseSysCache(HeapTuple tuple)
+void ReleaseSysCache(HeapTuple tuple)
 {
 	ReleaseCatCache(tuple);
 }
@@ -885,8 +421,8 @@ SearchSysCacheCopy(int cacheId,
 				   Datum key3,
 				   Datum key4)
 {
-	HeapTuple	tuple,
-				newtuple;
+	HeapTuple tuple,
+		newtuple;
 
 	tuple = SearchSysCache(cacheId, key1, key2, key3, key4);
 	if (!HeapTupleIsValid(tuple))
@@ -902,14 +438,13 @@ SearchSysCacheCopy(int cacheId,
  * A convenience routine that just probes to see if a tuple can be found.
  * No lock is retained on the syscache entry.
  */
-bool
-SearchSysCacheExists(int cacheId,
-					 Datum key1,
-					 Datum key2,
-					 Datum key3,
-					 Datum key4)
+bool SearchSysCacheExists(int cacheId,
+						  Datum key1,
+						  Datum key2,
+						  Datum key3,
+						  Datum key4)
 {
-	HeapTuple	tuple;
+	HeapTuple tuple;
 
 	tuple = SearchSysCache(cacheId, key1, key2, key3, key4);
 	if (!HeapTupleIsValid(tuple))
@@ -925,17 +460,16 @@ SearchSysCacheExists(int cacheId,
  * oidcol column of the found tuple, or InvalidOid if no tuple could be found.
  * No lock is retained on the syscache entry.
  */
-Oid
-GetSysCacheOid(int cacheId,
-			   AttrNumber oidcol,
-			   Datum key1,
-			   Datum key2,
-			   Datum key3,
-			   Datum key4)
+Oid GetSysCacheOid(int cacheId,
+				   AttrNumber oidcol,
+				   Datum key1,
+				   Datum key2,
+				   Datum key3,
+				   Datum key4)
 {
-	HeapTuple	tuple;
-	bool		isNull;
-	Oid			result;
+	HeapTuple tuple;
+	bool isNull;
+	Oid result;
 
 	tuple = SearchSysCache(cacheId, key1, key2, key3, key4);
 	if (!HeapTupleIsValid(tuple))
@@ -943,11 +477,10 @@ GetSysCacheOid(int cacheId,
 	result = heap_getattr(tuple, oidcol,
 						  SysCache[cacheId]->cc_tupdesc,
 						  &isNull);
-	Assert(!isNull);			/* columns used as oids should never be NULL */
+	Assert(!isNull); /* columns used as oids should never be NULL */
 	ReleaseSysCache(tuple);
 	return result;
 }
-
 
 /*
  * SearchSysCacheAttName
@@ -960,14 +493,14 @@ GetSysCacheOid(int cacheId,
 HeapTuple
 SearchSysCacheAttName(Oid relid, const char *attname)
 {
-	HeapTuple	tuple;
+	HeapTuple tuple;
 
 	tuple = SearchSysCache2(ATTNAME,
 							ObjectIdGetDatum(relid),
 							CStringGetDatum(attname));
 	if (!HeapTupleIsValid(tuple))
 		return NULL;
-	if (((Form_pg_attribute) GETSTRUCT(tuple))->attisdropped)
+	if (((Form_pg_attribute)GETSTRUCT(tuple))->attisdropped)
 	{
 		ReleaseSysCache(tuple);
 		return NULL;
@@ -983,8 +516,8 @@ SearchSysCacheAttName(Oid relid, const char *attname)
 HeapTuple
 SearchSysCacheCopyAttName(Oid relid, const char *attname)
 {
-	HeapTuple	tuple,
-				newtuple;
+	HeapTuple tuple,
+		newtuple;
 
 	tuple = SearchSysCacheAttName(relid, attname);
 	if (!HeapTupleIsValid(tuple))
@@ -999,10 +532,9 @@ SearchSysCacheCopyAttName(Oid relid, const char *attname)
  *
  * As above, an attisdropped-aware version of SearchSysCacheExists.
  */
-bool
-SearchSysCacheExistsAttName(Oid relid, const char *attname)
+bool SearchSysCacheExistsAttName(Oid relid, const char *attname)
 {
-	HeapTuple	tuple;
+	HeapTuple tuple;
 
 	tuple = SearchSysCacheAttName(relid, attname);
 	if (!HeapTupleIsValid(tuple))
@@ -1010,7 +542,6 @@ SearchSysCacheExistsAttName(Oid relid, const char *attname)
 	ReleaseSysCache(tuple);
 	return true;
 }
-
 
 /*
  * SearchSysCacheAttNum
@@ -1023,14 +554,14 @@ SearchSysCacheExistsAttName(Oid relid, const char *attname)
 HeapTuple
 SearchSysCacheAttNum(Oid relid, int16 attnum)
 {
-	HeapTuple	tuple;
+	HeapTuple tuple;
 
 	tuple = SearchSysCache2(ATTNUM,
 							ObjectIdGetDatum(relid),
 							Int16GetDatum(attnum));
 	if (!HeapTupleIsValid(tuple))
 		return NULL;
-	if (((Form_pg_attribute) GETSTRUCT(tuple))->attisdropped)
+	if (((Form_pg_attribute)GETSTRUCT(tuple))->attisdropped)
 	{
 		ReleaseSysCache(tuple);
 		return NULL;
@@ -1046,8 +577,8 @@ SearchSysCacheAttNum(Oid relid, int16 attnum)
 HeapTuple
 SearchSysCacheCopyAttNum(Oid relid, int16 attnum)
 {
-	HeapTuple	tuple,
-				newtuple;
+	HeapTuple tuple,
+		newtuple;
 
 	tuple = SearchSysCacheAttNum(relid, attnum);
 	if (!HeapTupleIsValid(tuple))
@@ -1056,7 +587,6 @@ SearchSysCacheCopyAttNum(Oid relid, int16 attnum)
 	ReleaseSysCache(tuple);
 	return newtuple;
 }
-
 
 /*
  * SysCacheGetAttr
@@ -1077,10 +607,9 @@ SearchSysCacheCopyAttNum(Oid relid, int16 attnum)
  * Note: it is legal to use SysCacheGetAttr() with a cacheId referencing
  * a different cache for the same catalog the tuple was fetched from.
  */
-Datum
-SysCacheGetAttr(int cacheId, HeapTuple tup,
-				AttrNumber attributeNumber,
-				bool *isNull)
+Datum SysCacheGetAttr(int cacheId, HeapTuple tup,
+					  AttrNumber attributeNumber,
+					  bool *isNull)
 {
 	/*
 	 * We just need to get the TupleDesc out of the cache entry, and then we
@@ -1108,12 +637,11 @@ SysCacheGetAttr(int cacheId, HeapTuple tup,
  * As above, a version of SysCacheGetAttr which knows that the attr cannot
  * be NULL.
  */
-Datum
-SysCacheGetAttrNotNull(int cacheId, HeapTuple tup,
-					   AttrNumber attributeNumber)
+Datum SysCacheGetAttrNotNull(int cacheId, HeapTuple tup,
+							 AttrNumber attributeNumber)
 {
-	bool		isnull;
-	Datum		attr;
+	bool isnull;
+	Datum attr;
 
 	attr = SysCacheGetAttr(cacheId, tup, attributeNumber, &isnull);
 
@@ -1175,8 +703,7 @@ SearchSysCacheList(int cacheId, int nkeys,
  *
  *	This routine is only quasi-public: it should only be used by inval.c.
  */
-void
-SysCacheInvalidate(int cacheId, uint32 hashValue)
+void SysCacheInvalidate(int cacheId, uint32 hashValue)
 {
 	if (cacheId < 0 || cacheId >= SysCacheSize)
 		elog(ERROR, "invalid cache ID: %d", cacheId);
@@ -1199,21 +726,20 @@ SysCacheInvalidate(int cacheId, uint32 hashValue)
  * catcache invalidation messages will also flush the snapshot.  If you add a
  * syscache for one of these relations, remove it from this list.
  */
-bool
-RelationInvalidatesSnapshotsOnly(Oid relid)
+bool RelationInvalidatesSnapshotsOnly(Oid relid)
 {
 	switch (relid)
 	{
-		case DbRoleSettingRelationId:
-		case DependRelationId:
-		case SharedDependRelationId:
-		case DescriptionRelationId:
-		case SharedDescriptionRelationId:
-		case SecLabelRelationId:
-		case SharedSecLabelRelationId:
-			return true;
-		default:
-			break;
+	case DbRoleSettingRelationId:
+	case DependRelationId:
+	case SharedDependRelationId:
+	case DescriptionRelationId:
+	case SharedDescriptionRelationId:
+	case SecLabelRelationId:
+	case SharedSecLabelRelationId:
+		return true;
+	default:
+		break;
 	}
 
 	return false;
@@ -1222,15 +748,14 @@ RelationInvalidatesSnapshotsOnly(Oid relid)
 /*
  * Test whether a relation has a system cache.
  */
-bool
-RelationHasSysCache(Oid relid)
+bool RelationHasSysCache(Oid relid)
 {
-	int			low = 0,
-				high = SysCacheRelationOidSize - 1;
+	int low = 0,
+		high = SysCacheRelationOidSize - 1;
 
 	while (low <= high)
 	{
-		int			middle = low + (high - low) / 2;
+		int middle = low + (high - low) / 2;
 
 		if (SysCacheRelationOid[middle] == relid)
 			return true;
@@ -1247,15 +772,14 @@ RelationHasSysCache(Oid relid)
  * Test whether a relation supports a system cache, ie it is either a
  * cached table or the index used for a cache.
  */
-bool
-RelationSupportsSysCache(Oid relid)
+bool RelationSupportsSysCache(Oid relid)
 {
-	int			low = 0,
-				high = SysCacheSupportingRelOidSize - 1;
+	int low = 0,
+		high = SysCacheSupportingRelOidSize - 1;
 
 	while (low <= high)
 	{
-		int			middle = low + (high - low) / 2;
+		int middle = low + (high - low) / 2;
 
 		if (SysCacheSupportingRelOid[middle] == relid)
 			return true;
@@ -1268,15 +792,14 @@ RelationSupportsSysCache(Oid relid)
 	return false;
 }
 
-
 /*
  * OID comparator for pg_qsort
  */
 static int
 oid_compare(const void *a, const void *b)
 {
-	Oid			oa = *((const Oid *) a);
-	Oid			ob = *((const Oid *) b);
+	Oid oa = *((const Oid *)a);
+	Oid ob = *((const Oid *)b);
 
 	if (oa == ob)
 		return 0;
