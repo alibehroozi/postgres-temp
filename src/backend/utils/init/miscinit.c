@@ -726,7 +726,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	{
 		ereport(FATAL,
 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-				 errmsg("role \"%s\" does not exist", rolename)));
+				 errmsg("1role \"%s\" does not exist", rolename)));
 	}
 	// if (rolename != NULL)
 	// {
