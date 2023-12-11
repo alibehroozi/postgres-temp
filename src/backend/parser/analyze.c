@@ -223,8 +223,6 @@ parse_sub_analyze(Node *parseTree, ParseState *parentParseState,
 				  bool locked_from_parent,
 				  bool resolve_unknowns)
 {
-	printf("parse_sub_analyze query string\n");
-
 	ParseState *pstate = make_parsestate(parentParseState);
 	Query *query;
 

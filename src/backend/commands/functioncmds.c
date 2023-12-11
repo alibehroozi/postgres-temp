@@ -93,15 +93,15 @@ static void
 compute_return_type(TypeName *returnType, Oid languageOid,
 					Oid *prorettype_p, bool *returnsSet_p)
 {
-	Oid			rettype;
-	Type		typtup;
-	AclResult	aclresult;
+	Oid rettype;
+	Type typtup;
+	AclResult aclresult;
 
 	typtup = LookupTypeName(NULL, returnType, NULL, false);
 
 	if (typtup)
 	{
-		if (!((Form_pg_type) GETSTRUCT(typtup))->typisdefined)
+		if (!((Form_pg_type)GETSTRUCT(typtup))->typisdefined)
 		{
 			if (languageOid == SQLlanguageId)
 				ereport(ERROR,
@@ -119,9 +119,9 @@ compute_return_type(TypeName *returnType, Oid languageOid,
 	}
 	else
 	{
-		char	   *typnam = TypeNameToString(returnType);
-		Oid			namespaceId;
-		char	   *typname;
+		char *typnam = TypeNameToString(returnType);
+		Oid namespaceId;
+		char *typname;
 		ObjectAddress address;
 
 		/*
@@ -184,54 +184,53 @@ compute_return_type(TypeName *returnType, Oid languageOid,
  * requiredResultType is set to InvalidOid if there are no OUT parameters,
  * else it is set to the OID of the implied result type.
  */
-void
-interpret_function_parameter_list(ParseState *pstate,
-								  List *parameters,
-								  Oid languageOid,
-								  ObjectType objtype,
-								  oidvector **parameterTypes,
-								  List **parameterTypes_list,
-								  ArrayType **allParameterTypes,
-								  ArrayType **parameterModes,
-								  ArrayType **parameterNames,
-								  List **inParameterNames_list,
-								  List **parameterDefaults,
-								  Oid *variadicArgType,
-								  Oid *requiredResultType)
+void interpret_function_parameter_list(ParseState *pstate,
+									   List *parameters,
+									   Oid languageOid,
+									   ObjectType objtype,
+									   oidvector **parameterTypes,
+									   List **parameterTypes_list,
+									   ArrayType **allParameterTypes,
+									   ArrayType **parameterModes,
+									   ArrayType **parameterNames,
+									   List **inParameterNames_list,
+									   List **parameterDefaults,
+									   Oid *variadicArgType,
+									   Oid *requiredResultType)
 {
-	int			parameterCount = list_length(parameters);
-	Oid		   *inTypes;
-	int			inCount = 0;
-	Datum	   *allTypes;
-	Datum	   *paramModes;
-	Datum	   *paramNames;
-	int			outCount = 0;
-	int			varCount = 0;
-	bool		have_names = false;
-	bool		have_defaults = false;
-	ListCell   *x;
-	int			i;
+	int parameterCount = list_length(parameters);
+	Oid *inTypes;
+	int inCount = 0;
+	Datum *allTypes;
+	Datum *paramModes;
+	Datum *paramNames;
+	int outCount = 0;
+	int varCount = 0;
+	bool have_names = false;
+	bool have_defaults = false;
+	ListCell *x;
+	int i;
 
-	*variadicArgType = InvalidOid;	/* default result */
-	*requiredResultType = InvalidOid;	/* default result */
+	*variadicArgType = InvalidOid;	  /* default result */
+	*requiredResultType = InvalidOid; /* default result */
 
-	inTypes = (Oid *) palloc(parameterCount * sizeof(Oid));
-	allTypes = (Datum *) palloc(parameterCount * sizeof(Datum));
-	paramModes = (Datum *) palloc(parameterCount * sizeof(Datum));
-	paramNames = (Datum *) palloc0(parameterCount * sizeof(Datum));
+	inTypes = (Oid *)palloc(parameterCount * sizeof(Oid));
+	allTypes = (Datum *)palloc(parameterCount * sizeof(Datum));
+	paramModes = (Datum *)palloc(parameterCount * sizeof(Datum));
+	paramNames = (Datum *)palloc0(parameterCount * sizeof(Datum));
 	*parameterDefaults = NIL;
 
 	/* Scan the list and extract data into work arrays */
 	i = 0;
-	foreach(x, parameters)
+	foreach (x, parameters)
 	{
-		FunctionParameter *fp = (FunctionParameter *) lfirst(x);
-		TypeName   *t = fp->argType;
+		FunctionParameter *fp = (FunctionParameter *)lfirst(x);
+		TypeName *t = fp->argType;
 		FunctionParameterMode fpmode = fp->mode;
-		bool		isinput = false;
-		Oid			toid;
-		Type		typtup;
-		AclResult	aclresult;
+		bool isinput = false;
+		Oid toid;
+		Type typtup;
+		AclResult aclresult;
 
 		/* For our purposes here, a defaulted mode spec is identical to IN */
 		if (fpmode == FUNC_PARAM_DEFAULT)
@@ -240,7 +239,7 @@ interpret_function_parameter_list(ParseState *pstate,
 		typtup = LookupTypeName(NULL, t, NULL, false);
 		if (typtup)
 		{
-			if (!((Form_pg_type) GETSTRUCT(typtup))->typisdefined)
+			if (!((Form_pg_type)GETSTRUCT(typtup))->typisdefined)
 			{
 				/* As above, hard error if language is SQL */
 				if (languageOid == SQLlanguageId)
@@ -269,7 +268,7 @@ interpret_function_parameter_list(ParseState *pstate,
 					(errcode(ERRCODE_UNDEFINED_OBJECT),
 					 errmsg("type %s does not exist",
 							TypeNameToString(t))));
-			toid = InvalidOid;	/* keep compiler quiet */
+			toid = InvalidOid; /* keep compiler quiet */
 		}
 
 		aclresult = object_aclcheck(TypeRelationId, toid, GetUserId(), ACL_USAGE);
@@ -335,17 +334,17 @@ interpret_function_parameter_list(ParseState *pstate,
 			/* validate variadic parameter type */
 			switch (toid)
 			{
-				case ANYARRAYOID:
-				case ANYCOMPATIBLEARRAYOID:
-				case ANYOID:
-					/* okay */
-					break;
-				default:
-					if (!OidIsValid(get_element_type(toid)))
-						ereport(ERROR,
-								(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
-								 errmsg("VARIADIC parameter must be an array")));
-					break;
+			case ANYARRAYOID:
+			case ANYCOMPATIBLEARRAYOID:
+			case ANYOID:
+				/* okay */
+				break;
+			default:
+				if (!OidIsValid(get_element_type(toid)))
+					ereport(ERROR,
+							(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
+							 errmsg("VARIADIC parameter must be an array")));
+				break;
 			}
 		}
 
@@ -355,7 +354,7 @@ interpret_function_parameter_list(ParseState *pstate,
 
 		if (fp->name && fp->name[0])
 		{
-			ListCell   *px;
+			ListCell *px;
 
 			/*
 			 * As of Postgres 9.0 we disallow using the same name for two
@@ -363,9 +362,9 @@ interpret_function_parameter_list(ParseState *pstate,
 			 * function's language, conflicting input and output names might
 			 * be bad too, but we leave it to the PL to complain if so.
 			 */
-			foreach(px, parameters)
+			foreach (px, parameters)
 			{
-				FunctionParameter *prevfp = (FunctionParameter *) lfirst(px);
+				FunctionParameter *prevfp = (FunctionParameter *)lfirst(px);
 				FunctionParameterMode prevfpmode;
 
 				if (prevfp == fp)
@@ -402,7 +401,7 @@ interpret_function_parameter_list(ParseState *pstate,
 
 		if (fp->defexpr)
 		{
-			Node	   *def;
+			Node *def;
 
 			if (!isinput)
 				ereport(ERROR,
@@ -491,7 +490,6 @@ interpret_function_parameter_list(ParseState *pstate,
 	else
 		*parameterNames = NULL;
 }
-
 
 /*
  * Recognize one of the options that can be passed to both CREATE
@@ -606,7 +604,7 @@ procedure_error:
 static char
 interpret_func_volatility(DefElem *defel)
 {
-	char	   *str = strVal(defel->arg);
+	char *str = strVal(defel->arg);
 
 	if (strcmp(str, "immutable") == 0)
 		return PROVOLATILE_IMMUTABLE;
@@ -617,14 +615,14 @@ interpret_func_volatility(DefElem *defel)
 	else
 	{
 		elog(ERROR, "invalid volatility \"%s\"", str);
-		return 0;				/* keep compiler quiet */
+		return 0; /* keep compiler quiet */
 	}
 }
 
 static char
 interpret_func_parallel(DefElem *defel)
 {
-	char	   *str = strVal(defel->arg);
+	char *str = strVal(defel->arg);
 
 	if (strcmp(str, "safe") == 0)
 		return PROPARALLEL_SAFE;
@@ -637,7 +635,7 @@ interpret_func_parallel(DefElem *defel)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
 				 errmsg("parameter \"parallel\" must be SAFE, RESTRICTED, or UNSAFE")));
-		return PROPARALLEL_UNSAFE;	/* keep compiler quiet */
+		return PROPARALLEL_UNSAFE; /* keep compiler quiet */
 	}
 }
 
@@ -649,9 +647,9 @@ interpret_func_parallel(DefElem *defel)
 static ArrayType *
 update_proconfig_value(ArrayType *a, List *set_items)
 {
-	ListCell   *l;
+	ListCell *l;
 
-	foreach(l, set_items)
+	foreach (l, set_items)
 	{
 		VariableSetStmt *sstmt = lfirst_node(VariableSetStmt, l);
 
@@ -659,11 +657,11 @@ update_proconfig_value(ArrayType *a, List *set_items)
 			a = NULL;
 		else
 		{
-			char	   *valuestr = ExtractSetVariableArgs(sstmt);
+			char *valuestr = ExtractSetVariableArgs(sstmt);
 
 			if (valuestr)
 				a = GUCArrayAdd(a, sstmt->name, valuestr);
-			else				/* RESET */
+			else /* RESET */
 				a = GUCArrayDelete(a, sstmt->name);
 		}
 	}
@@ -674,9 +672,9 @@ update_proconfig_value(ArrayType *a, List *set_items)
 static Oid
 interpret_func_support(DefElem *defel)
 {
-	List	   *procName = defGetQualifiedName(defel);
-	Oid			procOid;
-	Oid			argList[1];
+	List *procName = defGetQualifiedName(defel);
+	Oid procOid;
+	Oid argList[1];
 
 	/*
 	 * Support functions always take one INTERNAL argument and return
@@ -710,7 +708,6 @@ interpret_func_support(DefElem *defel)
 	return procOid;
 }
 
-
 /*
  * Dissect the list of options assembled in gram.y into function
  * attributes.
@@ -733,24 +730,24 @@ compute_function_attributes(ParseState *pstate,
 							Oid *prosupport,
 							char *parallel_p)
 {
-	ListCell   *option;
-	DefElem    *as_item = NULL;
-	DefElem    *language_item = NULL;
-	DefElem    *transform_item = NULL;
-	DefElem    *windowfunc_item = NULL;
-	DefElem    *volatility_item = NULL;
-	DefElem    *strict_item = NULL;
-	DefElem    *security_item = NULL;
-	DefElem    *leakproof_item = NULL;
-	List	   *set_items = NIL;
-	DefElem    *cost_item = NULL;
-	DefElem    *rows_item = NULL;
-	DefElem    *support_item = NULL;
-	DefElem    *parallel_item = NULL;
+	ListCell *option;
+	DefElem *as_item = NULL;
+	DefElem *language_item = NULL;
+	DefElem *transform_item = NULL;
+	DefElem *windowfunc_item = NULL;
+	DefElem *volatility_item = NULL;
+	DefElem *strict_item = NULL;
+	DefElem *security_item = NULL;
+	DefElem *leakproof_item = NULL;
+	List *set_items = NIL;
+	DefElem *cost_item = NULL;
+	DefElem *rows_item = NULL;
+	DefElem *support_item = NULL;
+	DefElem *parallel_item = NULL;
 
-	foreach(option, options)
+	foreach (option, options)
 	{
-		DefElem    *defel = (DefElem *) lfirst(option);
+		DefElem *defel = (DefElem *)lfirst(option);
 
 		if (strcmp(defel->defname, "as") == 0)
 		{
@@ -803,7 +800,7 @@ compute_function_attributes(ParseState *pstate,
 	}
 
 	if (as_item)
-		*as = (List *) as_item->arg;
+		*as = (List *)as_item->arg;
 	if (language_item)
 		*language = strVal(language_item->arg);
 	if (transform_item)
@@ -842,7 +839,6 @@ compute_function_attributes(ParseState *pstate,
 		*parallel_p = interpret_func_parallel(parallel_item);
 }
 
-
 /*
  * For a dynamically linked C language object, the form of the clause is
  *
@@ -860,6 +856,7 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 					Node **sql_body_out,
 					const char *queryString)
 {
+	printf("interpret_AS_clause query string\n");
 	if (!sql_body_in && !as)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
@@ -901,15 +898,15 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 	{
 		SQLFunctionParseInfoPtr pinfo;
 
-		pinfo = (SQLFunctionParseInfoPtr) palloc0(sizeof(SQLFunctionParseInfo));
+		pinfo = (SQLFunctionParseInfoPtr)palloc0(sizeof(SQLFunctionParseInfo));
 
 		pinfo->fname = funcname;
 		pinfo->nargs = list_length(parameterTypes);
-		pinfo->argtypes = (Oid *) palloc(pinfo->nargs * sizeof(Oid));
-		pinfo->argnames = (char **) palloc(pinfo->nargs * sizeof(char *));
+		pinfo->argtypes = (Oid *)palloc(pinfo->nargs * sizeof(Oid));
+		pinfo->argnames = (char **)palloc(pinfo->nargs * sizeof(char *));
 		for (int i = 0; i < list_length(parameterTypes); i++)
 		{
-			char	   *s = strVal(list_nth(inParameterNames, i));
+			char *s = strVal(list_nth(inParameterNames, i));
 
 			pinfo->argtypes[i] = list_nth_oid(parameterTypes, i);
 			if (IsPolymorphicType(pinfo->argtypes[i]))
@@ -925,14 +922,14 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 
 		if (IsA(sql_body_in, List))
 		{
-			List	   *stmts = linitial_node(List, castNode(List, sql_body_in));
-			ListCell   *lc;
-			List	   *transformed_stmts = NIL;
+			List *stmts = linitial_node(List, castNode(List, sql_body_in));
+			ListCell *lc;
+			List *transformed_stmts = NIL;
 
-			foreach(lc, stmts)
+			foreach (lc, stmts)
 			{
-				Node	   *stmt = lfirst(lc);
-				Query	   *q;
+				Node *stmt = lfirst(lc);
+				Query *q;
 				ParseState *pstate = make_parsestate(NULL);
 
 				pstate->p_sourcetext = queryString;
@@ -947,11 +944,11 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 				free_parsestate(pstate);
 			}
 
-			*sql_body_out = (Node *) list_make1(transformed_stmts);
+			*sql_body_out = (Node *)list_make1(transformed_stmts);
 		}
 		else
 		{
-			Query	   *q;
+			Query *q;
 			ParseState *pstate = make_parsestate(NULL);
 
 			pstate->p_sourcetext = queryString;
@@ -964,7 +961,7 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 							   GetCommandTagName(CreateCommandTag(q->utilityStmt))));
 			free_parsestate(pstate);
 
-			*sql_body_out = (Node *) q;
+			*sql_body_out = (Node *)q;
 		}
 
 		/*
@@ -1007,7 +1004,6 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 	}
 }
 
-
 /*
  * CreateFunction
  *	 Execute a CREATE FUNCTION (or CREATE PROCEDURE) utility statement.
@@ -1015,42 +1011,42 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 ObjectAddress
 CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 {
-	char	   *probin_str;
-	char	   *prosrc_str;
-	Node	   *prosqlbody;
-	Oid			prorettype;
-	bool		returnsSet;
-	char	   *language;
-	Oid			languageOid;
-	Oid			languageValidator;
-	Node	   *transformDefElem = NULL;
-	char	   *funcname;
-	Oid			namespaceId;
-	AclResult	aclresult;
-	oidvector  *parameterTypes;
-	List	   *parameterTypes_list = NIL;
-	ArrayType  *allParameterTypes;
-	ArrayType  *parameterModes;
-	ArrayType  *parameterNames;
-	List	   *inParameterNames_list = NIL;
-	List	   *parameterDefaults;
-	Oid			variadicArgType;
-	List	   *trftypes_list = NIL;
-	ArrayType  *trftypes;
-	Oid			requiredResultType;
-	bool		isWindowFunc,
-				isStrict,
-				security,
-				isLeakProof;
-	char		volatility;
-	ArrayType  *proconfig;
-	float4		procost;
-	float4		prorows;
-	Oid			prosupport;
-	HeapTuple	languageTuple;
+	char *probin_str;
+	char *prosrc_str;
+	Node *prosqlbody;
+	Oid prorettype;
+	bool returnsSet;
+	char *language;
+	Oid languageOid;
+	Oid languageValidator;
+	Node *transformDefElem = NULL;
+	char *funcname;
+	Oid namespaceId;
+	AclResult aclresult;
+	oidvector *parameterTypes;
+	List *parameterTypes_list = NIL;
+	ArrayType *allParameterTypes;
+	ArrayType *parameterModes;
+	ArrayType *parameterNames;
+	List *inParameterNames_list = NIL;
+	List *parameterDefaults;
+	Oid variadicArgType;
+	List *trftypes_list = NIL;
+	ArrayType *trftypes;
+	Oid requiredResultType;
+	bool isWindowFunc,
+		isStrict,
+		security,
+		isLeakProof;
+	char volatility;
+	ArrayType *proconfig;
+	float4 procost;
+	float4 prorows;
+	Oid prosupport;
+	HeapTuple languageTuple;
 	Form_pg_language languageStruct;
-	List	   *as_clause;
-	char		parallel;
+	List *as_clause;
+	char parallel;
 
 	/* Convert list of names to a name and namespace */
 	namespaceId = QualifiedNameGetCreationNamespace(stmt->funcname,
@@ -1071,8 +1067,8 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 	isLeakProof = false;
 	volatility = PROVOLATILE_VOLATILE;
 	proconfig = NULL;
-	procost = -1;				/* indicates not set */
-	prorows = -1;				/* indicates not set */
+	procost = -1; /* indicates not set */
+	prorows = -1; /* indicates not set */
 	prosupport = InvalidOid;
 	parallel = PROPARALLEL_UNSAFE;
 
@@ -1102,10 +1098,9 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("language \"%s\" does not exist", language),
-				 (extension_file_exists(language) ?
-				  errhint("Use CREATE EXTENSION to load the language into the database.") : 0)));
+				 (extension_file_exists(language) ? errhint("Use CREATE EXTENSION to load the language into the database.") : 0)));
 
-	languageStruct = (Form_pg_language) GETSTRUCT(languageTuple);
+	languageStruct = (Form_pg_language)GETSTRUCT(languageTuple);
 	languageOid = languageStruct->oid;
 
 	if (languageStruct->lanpltrusted)
@@ -1140,13 +1135,13 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 
 	if (transformDefElem)
 	{
-		ListCell   *lc;
+		ListCell *lc;
 
-		foreach(lc, castNode(List, transformDefElem))
+		foreach (lc, castNode(List, transformDefElem))
 		{
-			Oid			typeid = typenameTypeId(NULL,
-												lfirst_node(TypeName, lc));
-			Oid			elt = get_base_element_type(typeid);
+			Oid typeid = typenameTypeId(NULL,
+										lfirst_node(TypeName, lc));
+			Oid elt = get_base_element_type(typeid);
 
 			typeid = elt ? elt : typeid;
 
@@ -1208,13 +1203,13 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 
 	if (trftypes_list != NIL)
 	{
-		ListCell   *lc;
-		Datum	   *arr;
-		int			i;
+		ListCell *lc;
+		Datum *arr;
+		int i;
 
 		arr = palloc(list_length(trftypes_list) * sizeof(Datum));
 		i = 0;
-		foreach(lc, trftypes_list)
+		foreach (lc, trftypes_list)
 			arr[i++] = ObjectIdGetDatum(lfirst_oid(lc));
 		trftypes = construct_array_builtin(arr, list_length(trftypes_list), OIDOID);
 	}
@@ -1248,7 +1243,7 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 		if (returnsSet)
 			prorows = 1000;
 		else
-			prorows = 0;		/* dummy value if not returnsSet */
+			prorows = 0; /* dummy value if not returnsSet */
 	}
 	else if (!returnsSet)
 		ereport(ERROR,
@@ -1267,8 +1262,8 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 						   GetUserId(),
 						   languageOid,
 						   languageValidator,
-						   prosrc_str,	/* converted to text later */
-						   probin_str,	/* converted to text later */
+						   prosrc_str, /* converted to text later */
+						   probin_str, /* converted to text later */
 						   prosqlbody,
 						   stmt->is_procedure ? PROKIND_PROCEDURE : (isWindowFunc ? PROKIND_WINDOW : PROKIND_FUNCTION),
 						   security,
@@ -1294,12 +1289,11 @@ CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
  * Note: this is also used for aggregate deletion, since the OIDs of
  * both functions and aggregates point to pg_proc.
  */
-void
-RemoveFunctionById(Oid funcOid)
+void RemoveFunctionById(Oid funcOid)
 {
-	Relation	relation;
-	HeapTuple	tup;
-	char		prokind;
+	Relation relation;
+	HeapTuple tup;
+	char prokind;
 
 	/*
 	 * Delete the pg_proc tuple.
@@ -1310,7 +1304,7 @@ RemoveFunctionById(Oid funcOid)
 	if (!HeapTupleIsValid(tup)) /* should not happen */
 		elog(ERROR, "cache lookup failed for function %u", funcOid);
 
-	prokind = ((Form_pg_proc) GETSTRUCT(tup))->prokind;
+	prokind = ((Form_pg_proc)GETSTRUCT(tup))->prokind;
 
 	CatalogTupleDelete(relation, &tup->t_self);
 
@@ -1347,21 +1341,21 @@ RemoveFunctionById(Oid funcOid)
 ObjectAddress
 AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 {
-	HeapTuple	tup;
-	Oid			funcOid;
+	HeapTuple tup;
+	Oid funcOid;
 	Form_pg_proc procForm;
-	bool		is_procedure;
-	Relation	rel;
-	ListCell   *l;
-	DefElem    *volatility_item = NULL;
-	DefElem    *strict_item = NULL;
-	DefElem    *security_def_item = NULL;
-	DefElem    *leakproof_item = NULL;
-	List	   *set_items = NIL;
-	DefElem    *cost_item = NULL;
-	DefElem    *rows_item = NULL;
-	DefElem    *support_item = NULL;
-	DefElem    *parallel_item = NULL;
+	bool is_procedure;
+	Relation rel;
+	ListCell *l;
+	DefElem *volatility_item = NULL;
+	DefElem *strict_item = NULL;
+	DefElem *security_def_item = NULL;
+	DefElem *leakproof_item = NULL;
+	List *set_items = NIL;
+	DefElem *cost_item = NULL;
+	DefElem *rows_item = NULL;
+	DefElem *support_item = NULL;
+	DefElem *parallel_item = NULL;
 	ObjectAddress address;
 
 	rel = table_open(ProcedureRelationId, RowExclusiveLock);
@@ -1374,7 +1368,7 @@ AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 	if (!HeapTupleIsValid(tup)) /* should not happen */
 		elog(ERROR, "cache lookup failed for function %u", funcOid);
 
-	procForm = (Form_pg_proc) GETSTRUCT(tup);
+	procForm = (Form_pg_proc)GETSTRUCT(tup);
 
 	/* Permission check: must own function */
 	if (!object_ownercheck(ProcedureRelationId, funcOid, GetUserId()))
@@ -1390,9 +1384,9 @@ AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 	is_procedure = (procForm->prokind == PROKIND_PROCEDURE);
 
 	/* Examine requested actions. */
-	foreach(l, stmt->actions)
+	foreach (l, stmt->actions)
 	{
-		DefElem    *defel = (DefElem *) lfirst(l);
+		DefElem *defel = (DefElem *)lfirst(l);
 
 		if (compute_common_attribute(pstate,
 									 is_procedure,
@@ -1446,7 +1440,7 @@ AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 	if (support_item)
 	{
 		/* interpret_func_support handles the privilege check */
-		Oid			newsupport = interpret_func_support(support_item);
+		Oid newsupport = interpret_func_support(support_item);
 
 		/* Add or replace dependency on support function */
 		if (OidIsValid(procForm->prosupport))
@@ -1473,12 +1467,12 @@ AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 		procForm->proparallel = interpret_func_parallel(parallel_item);
 	if (set_items)
 	{
-		Datum		datum;
-		bool		isnull;
-		ArrayType  *a;
-		Datum		repl_val[Natts_pg_proc];
-		bool		repl_null[Natts_pg_proc];
-		bool		repl_repl[Natts_pg_proc];
+		Datum datum;
+		bool isnull;
+		ArrayType *a;
+		Datum repl_val[Natts_pg_proc];
+		bool repl_null[Natts_pg_proc];
+		bool repl_repl[Natts_pg_proc];
 
 		/* extract existing proconfig setting */
 		datum = SysCacheGetAttr(PROCOID, tup, Anum_pg_proc_proconfig, &isnull);
@@ -1493,7 +1487,7 @@ AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 
 		if (a == NULL)
 		{
-			repl_val[Anum_pg_proc_proconfig - 1] = (Datum) 0;
+			repl_val[Anum_pg_proc_proconfig - 1] = (Datum)0;
 			repl_null[Anum_pg_proc_proconfig - 1] = true;
 		}
 		else
@@ -1518,25 +1512,24 @@ AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 	return address;
 }
 
-
 /*
  * CREATE CAST
  */
 ObjectAddress
 CreateCast(CreateCastStmt *stmt)
 {
-	Oid			sourcetypeid;
-	Oid			targettypeid;
-	char		sourcetyptype;
-	char		targettyptype;
-	Oid			funcid;
-	Oid			incastid = InvalidOid;
-	Oid			outcastid = InvalidOid;
-	int			nargs;
-	char		castcontext;
-	char		castmethod;
-	HeapTuple	tuple;
-	AclResult	aclresult;
+	Oid sourcetypeid;
+	Oid targettypeid;
+	char sourcetyptype;
+	char targettyptype;
+	Oid funcid;
+	Oid incastid = InvalidOid;
+	Oid outcastid = InvalidOid;
+	int nargs;
+	char castcontext;
+	char castmethod;
+	HeapTuple tuple;
+	AclResult aclresult;
 	ObjectAddress myself;
 
 	sourcetypeid = typenameTypeId(NULL, stmt->sourcetype);
@@ -1558,8 +1551,7 @@ CreateCast(CreateCastStmt *stmt)
 						TypeNameToString(stmt->targettype))));
 
 	/* Permission check */
-	if (!object_ownercheck(TypeRelationId, sourcetypeid, GetUserId())
-		&& !object_ownercheck(TypeRelationId, targettypeid, GetUserId()))
+	if (!object_ownercheck(TypeRelationId, sourcetypeid, GetUserId()) && !object_ownercheck(TypeRelationId, targettypeid, GetUserId()))
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
 				 errmsg("must be owner of type %s or type %s",
@@ -1603,7 +1595,7 @@ CreateCast(CreateCastStmt *stmt)
 		if (!HeapTupleIsValid(tuple))
 			elog(ERROR, "cache lookup failed for function %u", funcid);
 
-		procstruct = (Form_pg_proc) GETSTRUCT(tuple);
+		procstruct = (Form_pg_proc)GETSTRUCT(tuple);
 		nargs = procstruct->pronargs;
 		if (nargs < 1 || nargs > 3)
 			ereport(ERROR,
@@ -1632,11 +1624,11 @@ CreateCast(CreateCastStmt *stmt)
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
 					 errmsg("return data type of cast function must match or be binary-coercible to target data type")));
 
-		/*
-		 * Restricting the volatility of a cast function may or may not be a
-		 * good idea in the abstract, but it definitely breaks many old
-		 * user-defined types.  Disable this check --- tgl 2/1/03
-		 */
+			/*
+			 * Restricting the volatility of a cast function may or may not be a
+			 * good idea in the abstract, but it definitely breaks many old
+			 * user-defined types.  Disable this check --- tgl 2/1/03
+			 */
 #ifdef NOT_USED
 		if (procstruct->provolatile == PROVOLATILE_VOLATILE)
 			ereport(ERROR,
@@ -1662,12 +1654,12 @@ CreateCast(CreateCastStmt *stmt)
 
 	if (castmethod == COERCION_METHOD_BINARY)
 	{
-		int16		typ1len;
-		int16		typ2len;
-		bool		typ1byval;
-		bool		typ2byval;
-		char		typ1align;
-		char		typ2align;
+		int16 typ1len;
+		int16 typ2len;
+		bool typ1byval;
+		bool typ2byval;
+		char typ1align;
+		char typ2align;
 
 		/*
 		 * Must be superuser to create binary-compatible casts, since
@@ -1750,27 +1742,26 @@ CreateCast(CreateCastStmt *stmt)
 	/* convert CoercionContext enum to char value for castcontext */
 	switch (stmt->context)
 	{
-		case COERCION_IMPLICIT:
-			castcontext = COERCION_CODE_IMPLICIT;
-			break;
-		case COERCION_ASSIGNMENT:
-			castcontext = COERCION_CODE_ASSIGNMENT;
-			break;
-			/* COERCION_PLPGSQL is intentionally not covered here */
-		case COERCION_EXPLICIT:
-			castcontext = COERCION_CODE_EXPLICIT;
-			break;
-		default:
-			elog(ERROR, "unrecognized CoercionContext: %d", stmt->context);
-			castcontext = 0;	/* keep compiler quiet */
-			break;
+	case COERCION_IMPLICIT:
+		castcontext = COERCION_CODE_IMPLICIT;
+		break;
+	case COERCION_ASSIGNMENT:
+		castcontext = COERCION_CODE_ASSIGNMENT;
+		break;
+		/* COERCION_PLPGSQL is intentionally not covered here */
+	case COERCION_EXPLICIT:
+		castcontext = COERCION_CODE_EXPLICIT;
+		break;
+	default:
+		elog(ERROR, "unrecognized CoercionContext: %d", stmt->context);
+		castcontext = 0; /* keep compiler quiet */
+		break;
 	}
 
 	myself = CastCreate(sourcetypeid, targettypeid, funcid, incastid, outcastid,
 						castcontext, castmethod, DEPENDENCY_NORMAL);
 	return myself;
 }
-
 
 static void
 check_transform_function(Form_pg_proc procstruct)
@@ -1798,31 +1789,30 @@ check_transform_function(Form_pg_proc procstruct)
 						"internal")));
 }
 
-
 /*
  * CREATE TRANSFORM
  */
 ObjectAddress
 CreateTransform(CreateTransformStmt *stmt)
 {
-	Oid			typeid;
-	char		typtype;
-	Oid			langid;
-	Oid			fromsqlfuncid;
-	Oid			tosqlfuncid;
-	AclResult	aclresult;
+	Oid typeid;
+	char typtype;
+	Oid langid;
+	Oid fromsqlfuncid;
+	Oid tosqlfuncid;
+	AclResult aclresult;
 	Form_pg_proc procstruct;
-	Datum		values[Natts_pg_transform];
-	bool		nulls[Natts_pg_transform] = {0};
-	bool		replaces[Natts_pg_transform] = {0};
-	Oid			transformid;
-	HeapTuple	tuple;
-	HeapTuple	newtuple;
-	Relation	relation;
+	Datum values[Natts_pg_transform];
+	bool nulls[Natts_pg_transform] = {0};
+	bool replaces[Natts_pg_transform] = {0};
+	Oid transformid;
+	HeapTuple tuple;
+	HeapTuple newtuple;
+	Relation relation;
 	ObjectAddress myself,
-				referenced;
+		referenced;
 	ObjectAddresses *addrs;
-	bool		is_replace;
+	bool is_replace;
 
 	/*
 	 * Get the type
@@ -1875,7 +1865,7 @@ CreateTransform(CreateTransformStmt *stmt)
 		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(fromsqlfuncid));
 		if (!HeapTupleIsValid(tuple))
 			elog(ERROR, "cache lookup failed for function %u", fromsqlfuncid);
-		procstruct = (Form_pg_proc) GETSTRUCT(tuple);
+		procstruct = (Form_pg_proc)GETSTRUCT(tuple);
 		if (procstruct->prorettype != INTERNALOID)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
@@ -1901,7 +1891,7 @@ CreateTransform(CreateTransformStmt *stmt)
 		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(tosqlfuncid));
 		if (!HeapTupleIsValid(tuple))
 			elog(ERROR, "cache lookup failed for function %u", tosqlfuncid);
-		procstruct = (Form_pg_proc) GETSTRUCT(tuple);
+		procstruct = (Form_pg_proc)GETSTRUCT(tuple);
 		if (procstruct->prorettype != typeid)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
@@ -1927,7 +1917,7 @@ CreateTransform(CreateTransformStmt *stmt)
 							ObjectIdGetDatum(langid));
 	if (HeapTupleIsValid(tuple))
 	{
-		Form_pg_transform form = (Form_pg_transform) GETSTRUCT(tuple);
+		Form_pg_transform form = (Form_pg_transform)GETSTRUCT(tuple);
 
 		if (!stmt->replace)
 			ereport(ERROR,
@@ -2000,17 +1990,15 @@ CreateTransform(CreateTransformStmt *stmt)
 	return myself;
 }
 
-
 /*
  * get_transform_oid - given type OID and language OID, look up a transform OID
  *
  * If missing_ok is false, throw an error if the transform is not found.  If
  * true, just return InvalidOid.
  */
-Oid
-get_transform_oid(Oid type_id, Oid lang_id, bool missing_ok)
+Oid get_transform_oid(Oid type_id, Oid lang_id, bool missing_ok)
 {
-	Oid			oid;
+	Oid oid;
 
 	oid = GetSysCacheOid2(TRFTYPELANG, Anum_pg_transform_oid,
 						  ObjectIdGetDatum(type_id),
@@ -2024,16 +2012,14 @@ get_transform_oid(Oid type_id, Oid lang_id, bool missing_ok)
 	return oid;
 }
 
-
 /*
  * Subroutine for ALTER FUNCTION/AGGREGATE SET SCHEMA/RENAME
  *
  * Is there a function with the given name and signature already in the given
  * namespace?  If so, raise an appropriate error message.
  */
-void
-IsThereFunctionInNamespace(const char *proname, int pronargs,
-						   oidvector *proargtypes, Oid nspOid)
+void IsThereFunctionInNamespace(const char *proname, int pronargs,
+								oidvector *proargtypes, Oid nspOid)
 {
 	/* check for duplicate name (more friendly than unique-index failure) */
 	if (SearchSysCacheExists3(PROCNAMEARGSNSP,
@@ -2054,22 +2040,21 @@ IsThereFunctionInNamespace(const char *proname, int pronargs,
  *
  * See at ExecuteCallStmt() about the atomic argument.
  */
-void
-ExecuteDoStmt(ParseState *pstate, DoStmt *stmt, bool atomic)
+void ExecuteDoStmt(ParseState *pstate, DoStmt *stmt, bool atomic)
 {
 	InlineCodeBlock *codeblock = makeNode(InlineCodeBlock);
-	ListCell   *arg;
-	DefElem    *as_item = NULL;
-	DefElem    *language_item = NULL;
-	char	   *language;
-	Oid			laninline;
-	HeapTuple	languageTuple;
+	ListCell *arg;
+	DefElem *as_item = NULL;
+	DefElem *language_item = NULL;
+	char *language;
+	Oid laninline;
+	HeapTuple languageTuple;
 	Form_pg_language languageStruct;
 
 	/* Process options we got from gram.y */
-	foreach(arg, stmt->args)
+	foreach (arg, stmt->args)
 	{
-		DefElem    *defel = (DefElem *) lfirst(arg);
+		DefElem *defel = (DefElem *)lfirst(arg);
 
 		if (strcmp(defel->defname, "as") == 0)
 		{
@@ -2107,10 +2092,9 @@ ExecuteDoStmt(ParseState *pstate, DoStmt *stmt, bool atomic)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("language \"%s\" does not exist", language),
-				 (extension_file_exists(language) ?
-				  errhint("Use CREATE EXTENSION to load the language into the database.") : 0)));
+				 (extension_file_exists(language) ? errhint("Use CREATE EXTENSION to load the language into the database.") : 0)));
 
-	languageStruct = (Form_pg_language) GETSTRUCT(languageTuple);
+	languageStruct = (Form_pg_language)GETSTRUCT(languageTuple);
 	codeblock->langOid = languageStruct->oid;
 	codeblock->langIsTrusted = languageStruct->lanpltrusted;
 	codeblock->atomic = atomic;
@@ -2118,7 +2102,7 @@ ExecuteDoStmt(ParseState *pstate, DoStmt *stmt, bool atomic)
 	if (languageStruct->lanpltrusted)
 	{
 		/* if trusted language, need USAGE privilege */
-		AclResult	aclresult;
+		AclResult aclresult;
 
 		aclresult = object_aclcheck(LanguageRelationId, codeblock->langOid, GetUserId(),
 									ACL_USAGE);
@@ -2176,22 +2160,21 @@ ExecuteDoStmt(ParseState *pstate, DoStmt *stmt, bool atomic)
  * values that we're passing to the procedure will survive transaction
  * commits that might occur inside the procedure.
  */
-void
-ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver *dest)
+void ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver *dest)
 {
 	LOCAL_FCINFO(fcinfo, FUNC_MAX_ARGS);
-	ListCell   *lc;
-	FuncExpr   *fexpr;
-	int			nargs;
-	int			i;
-	AclResult	aclresult;
-	FmgrInfo	flinfo;
+	ListCell *lc;
+	FuncExpr *fexpr;
+	int nargs;
+	int i;
+	AclResult aclresult;
+	FmgrInfo flinfo;
 	CallContext *callcontext;
-	EState	   *estate;
+	EState *estate;
 	ExprContext *econtext;
-	HeapTuple	tp;
+	HeapTuple tp;
 	PgStat_FunctionCallUsage fcusage;
-	Datum		retval;
+	Datum retval;
 
 	fexpr = stmt->funcexpr;
 	Assert(fexpr);
@@ -2224,7 +2207,7 @@ ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver 
 	 * and AbortTransaction() resets the security context.  This could be
 	 * reorganized, but right now it doesn't work.
 	 */
-	if (((Form_pg_proc) GETSTRUCT(tp))->prosecdef)
+	if (((Form_pg_proc)GETSTRUCT(tp))->prosecdef)
 		callcontext->atomic = true;
 
 	ReleaseSysCache(tp);
@@ -2242,9 +2225,9 @@ ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver 
 	/* Initialize function call structure */
 	InvokeFunctionExecuteHook(fexpr->funcid);
 	fmgr_info(fexpr->funcid, &flinfo);
-	fmgr_info_set_expr((Node *) fexpr, &flinfo);
+	fmgr_info_set_expr((Node *)fexpr, &flinfo);
 	InitFunctionCallInfoData(*fcinfo, &flinfo, nargs, fexpr->inputcollid,
-							 (Node *) callcontext, NULL);
+							 (Node *)callcontext, NULL);
 
 	/*
 	 * Evaluate procedure arguments inside a suitable execution context.  Note
@@ -2265,11 +2248,11 @@ ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver 
 		PushActiveSnapshot(GetTransactionSnapshot());
 
 	i = 0;
-	foreach(lc, fexpr->args)
+	foreach (lc, fexpr->args)
 	{
-		ExprState  *exprstate;
-		Datum		val;
-		bool		isnull;
+		ExprState *exprstate;
+		Datum val;
+		bool isnull;
 
 		exprstate = ExecPrepareExpr(lfirst(lc), estate);
 
@@ -2299,9 +2282,9 @@ ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver 
 	{
 		/* send tuple to client */
 		HeapTupleHeader td;
-		Oid			tupType;
-		int32		tupTypmod;
-		TupleDesc	retdesc;
+		Oid tupType;
+		int32 tupTypmod;
+		TupleDesc retdesc;
 		HeapTupleData rettupdata;
 		TupOutputState *tstate;
 		TupleTableSlot *slot;
@@ -2356,9 +2339,9 @@ ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver 
 TupleDesc
 CallStmtResultDesc(CallStmt *stmt)
 {
-	FuncExpr   *fexpr;
-	HeapTuple	tuple;
-	TupleDesc	tupdesc;
+	FuncExpr *fexpr;
+	HeapTuple tuple;
+	TupleDesc tupdesc;
 
 	fexpr = stmt->funcexpr;
 
