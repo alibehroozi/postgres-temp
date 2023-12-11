@@ -2521,7 +2521,7 @@ AllocateFile(const char *name, const char *mode)
 	ReleaseLruFiles();
 
 TryAgain:
-	printf("%s in mode %s", name, mode);
+	printf("%s in mode %s\n", name, mode);
 	if ((file = fopen(name, mode)) != NULL)
 	{
 		AllocateDesc *desc = &allocatedDescs[numAllocatedDescs];

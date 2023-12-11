@@ -745,7 +745,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	// 				 errmsg("role with OID %u does not exist", roleid)));
 	// }
 
-	rform = (Form_pg_authid)GETSTRUCT(roleTup);
+	// rform = (Form_pg_authid)GETSTRUCT(roleTup);
 	roleid = rform->oid;
 	rname = NameStr(rform->rolname);
 
