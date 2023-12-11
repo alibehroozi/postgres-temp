@@ -37,7 +37,6 @@
 #include "utils/snapmgr.h"
 #include "utils/timestamp.h"
 
-
 /*
  * The hash table in which prepared queries are stored. This is
  * per-backend: query plans are not shared between backends.
@@ -55,15 +54,14 @@ static Datum build_regtype_array(Oid *param_types, int num_params);
 /*
  * Implements the 'PREPARE' utility statement.
  */
-void
-PrepareQuery(ParseState *pstate, PrepareStmt *stmt,
-			 int stmt_location, int stmt_len)
+void PrepareQuery(ParseState *pstate, PrepareStmt *stmt,
+				  int stmt_location, int stmt_len)
 {
-	RawStmt    *rawstmt;
+	RawStmt *rawstmt;
 	CachedPlanSource *plansource;
-	Oid		   *argtypes = NULL;
-	int			nargs;
-	List	   *query_list;
+	Oid *argtypes = NULL;
+	int nargs;
+	List *query_list;
 
 	/*
 	 * Disallow empty-string statement name (conflicts with protocol-level
@@ -95,16 +93,16 @@ PrepareQuery(ParseState *pstate, PrepareStmt *stmt,
 
 	if (nargs)
 	{
-		int			i;
-		ListCell   *l;
+		int i;
+		ListCell *l;
 
 		argtypes = palloc_array(Oid, nargs);
 		i = 0;
 
-		foreach(l, stmt->argtypes)
+		foreach (l, stmt->argtypes)
 		{
-			TypeName   *tn = lfirst(l);
-			Oid			toid = typenameTypeId(pstate, tn);
+			TypeName *tn = lfirst(l);
+			Oid toid = typenameTypeId(pstate, tn);
 
 			argtypes[i++] = toid;
 		}
@@ -127,8 +125,8 @@ PrepareQuery(ParseState *pstate, PrepareStmt *stmt,
 					   nargs,
 					   NULL,
 					   NULL,
-					   CURSOR_OPT_PARALLEL_OK,	/* allow parallel mode */
-					   true);	/* fixed result */
+					   CURSOR_OPT_PARALLEL_OK, /* allow parallel mode */
+					   true);				   /* fixed result */
 
 	/*
 	 * Save the results.
@@ -146,21 +144,22 @@ PrepareQuery(ParseState *pstate, PrepareStmt *stmt,
  * set up correctly for CREATE TABLE AS, but we still have to make a few
  * other adjustments here.
  */
-void
-ExecuteQuery(ParseState *pstate,
-			 ExecuteStmt *stmt, IntoClause *intoClause,
-			 ParamListInfo params,
-			 DestReceiver *dest, QueryCompletion *qc)
+void ExecuteQuery(ParseState *pstate,
+				  ExecuteStmt *stmt, IntoClause *intoClause,
+				  ParamListInfo params,
+				  DestReceiver *dest, QueryCompletion *qc)
 {
 	PreparedStatement *entry;
 	CachedPlan *cplan;
-	List	   *plan_list;
+	List *plan_list;
 	ParamListInfo paramLI = NULL;
-	EState	   *estate = NULL;
-	Portal		portal;
-	char	   *query_string;
-	int			eflags;
-	long		count;
+	EState *estate = NULL;
+	Portal portal;
+	char *query_string;
+	int eflags;
+	long count;
+
+	printf("1T query type %i\n", stmt->commandType);
 
 	/* Look it up in the hash table */
 	entry = FetchPreparedStatement(stmt->name, true);
@@ -255,7 +254,7 @@ ExecuteQuery(ParseState *pstate,
 	 */
 	PortalStart(portal, paramLI, eflags, GetActiveSnapshot());
 
-	(void) PortalRun(portal, count, false, true, dest, dest, qc);
+	(void)PortalRun(portal, count, false, true, dest, dest, qc);
 
 	PortalDrop(portal, false);
 
@@ -281,13 +280,13 @@ static ParamListInfo
 EvaluateParams(ParseState *pstate, PreparedStatement *pstmt, List *params,
 			   EState *estate)
 {
-	Oid		   *param_types = pstmt->plansource->param_types;
-	int			num_params = pstmt->plansource->num_params;
-	int			nparams = list_length(params);
+	Oid *param_types = pstmt->plansource->param_types;
+	int num_params = pstmt->plansource->num_params;
+	int nparams = list_length(params);
 	ParamListInfo paramLI;
-	List	   *exprstates;
-	ListCell   *l;
-	int			i;
+	List *exprstates;
+	ListCell *l;
+	int i;
 
 	if (nparams != num_params)
 		ereport(ERROR,
@@ -308,11 +307,11 @@ EvaluateParams(ParseState *pstate, PreparedStatement *pstmt, List *params,
 	params = copyObject(params);
 
 	i = 0;
-	foreach(l, params)
+	foreach (l, params)
 	{
-		Node	   *expr = lfirst(l);
-		Oid			expected_type_id = param_types[i];
-		Oid			given_type_id;
+		Node *expr = lfirst(l);
+		Oid expected_type_id = param_types[i];
+		Oid given_type_id;
 
 		expr = transformExpr(pstate, expr, EXPR_KIND_EXECUTE_PARAMETER);
 
@@ -347,9 +346,9 @@ EvaluateParams(ParseState *pstate, PreparedStatement *pstmt, List *params,
 	paramLI = makeParamList(num_params);
 
 	i = 0;
-	foreach(l, exprstates)
+	foreach (l, exprstates)
 	{
-		ExprState  *n = (ExprState *) lfirst(l);
+		ExprState *n = (ExprState *)lfirst(l);
 		ParamExternData *prm = &paramLI->params[i];
 
 		prm->ptype = param_types[i];
@@ -364,14 +363,13 @@ EvaluateParams(ParseState *pstate, PreparedStatement *pstmt, List *params,
 	return paramLI;
 }
 
-
 /*
  * Initialize query hash table upon first use.
  */
 static void
 InitQueryHashTable(void)
 {
-	HASHCTL		hash_ctl;
+	HASHCTL hash_ctl;
 
 	hash_ctl.keysize = NAMEDATALEN;
 	hash_ctl.entrysize = sizeof(PreparedStatement);
@@ -388,24 +386,23 @@ InitQueryHashTable(void)
  * in case we get an error here; we'll save it once we've created the hash
  * table entry.
  */
-void
-StorePreparedStatement(const char *stmt_name,
-					   CachedPlanSource *plansource,
-					   bool from_sql)
+void StorePreparedStatement(const char *stmt_name,
+							CachedPlanSource *plansource,
+							bool from_sql)
 {
 	PreparedStatement *entry;
 	TimestampTz cur_ts = GetCurrentStatementStartTimestamp();
-	bool		found;
+	bool found;
 
 	/* Initialize the hash table, if necessary */
 	if (!prepared_queries)
 		InitQueryHashTable();
 
 	/* Add entry to hash table */
-	entry = (PreparedStatement *) hash_search(prepared_queries,
-											  stmt_name,
-											  HASH_ENTER,
-											  &found);
+	entry = (PreparedStatement *)hash_search(prepared_queries,
+											 stmt_name,
+											 HASH_ENTER,
+											 &found);
 
 	/* Shouldn't get a duplicate entry */
 	if (found)
@@ -440,10 +437,10 @@ FetchPreparedStatement(const char *stmt_name, bool throwError)
 	 * anything, therefore it couldn't possibly store our plan.
 	 */
 	if (prepared_queries)
-		entry = (PreparedStatement *) hash_search(prepared_queries,
-												  stmt_name,
-												  HASH_FIND,
-												  NULL);
+		entry = (PreparedStatement *)hash_search(prepared_queries,
+												 stmt_name,
+												 HASH_FIND,
+												 NULL);
 	else
 		entry = NULL;
 
@@ -488,7 +485,7 @@ FetchPreparedStatementResultDesc(PreparedStatement *stmt)
 List *
 FetchPreparedStatementTargetList(PreparedStatement *stmt)
 {
-	List	   *tlist;
+	List *tlist;
 
 	/* Get the plan's primary targetlist */
 	tlist = CachedPlanGetTargetList(stmt->plansource, NULL);
@@ -501,8 +498,7 @@ FetchPreparedStatementTargetList(PreparedStatement *stmt)
  * Implements the 'DEALLOCATE' utility statement: deletes the
  * specified plan from storage.
  */
-void
-DeallocateQuery(DeallocateStmt *stmt)
+void DeallocateQuery(DeallocateStmt *stmt)
 {
 	if (stmt->name)
 		DropPreparedStatement(stmt->name, true);
@@ -515,8 +511,7 @@ DeallocateQuery(DeallocateStmt *stmt)
  *
  * If showError is false, dropping a nonexistent statement is a no-op.
  */
-void
-DropPreparedStatement(const char *stmt_name, bool showError)
+void DropPreparedStatement(const char *stmt_name, bool showError)
 {
 	PreparedStatement *entry;
 
@@ -536,8 +531,7 @@ DropPreparedStatement(const char *stmt_name, bool showError)
 /*
  * Drop all cached statements.
  */
-void
-DropAllPreparedStatements(void)
+void DropAllPreparedStatements(void)
 {
 	HASH_SEQ_STATUS seq;
 	PreparedStatement *entry;
@@ -567,22 +561,21 @@ DropAllPreparedStatements(void)
  * Note: the passed-in queryString is that of the EXPLAIN EXECUTE,
  * not the original PREPARE; we get the latter string from the plancache.
  */
-void
-ExplainExecuteQuery(ExecuteStmt *execstmt, IntoClause *into, ExplainState *es,
-					const char *queryString, ParamListInfo params,
-					QueryEnvironment *queryEnv)
+void ExplainExecuteQuery(ExecuteStmt *execstmt, IntoClause *into, ExplainState *es,
+						 const char *queryString, ParamListInfo params,
+						 QueryEnvironment *queryEnv)
 {
 	PreparedStatement *entry;
 	const char *query_string;
 	CachedPlan *cplan;
-	List	   *plan_list;
-	ListCell   *p;
+	List *plan_list;
+	ListCell *p;
 	ParamListInfo paramLI = NULL;
-	EState	   *estate = NULL;
-	instr_time	planstart;
-	instr_time	planduration;
+	EState *estate = NULL;
+	instr_time planstart;
+	instr_time planduration;
 	BufferUsage bufusage_start,
-				bufusage;
+		bufusage;
 
 	if (es->buffers)
 		bufusage_start = pgBufferUsage;
@@ -634,7 +627,7 @@ ExplainExecuteQuery(ExecuteStmt *execstmt, IntoClause *into, ExplainState *es,
 	plan_list = cplan->stmt_list;
 
 	/* Explain each query */
-	foreach(p, plan_list)
+	foreach (p, plan_list)
 	{
 		PlannedStmt *pstmt = lfirst_node(PlannedStmt, p);
 
@@ -663,10 +656,9 @@ ExplainExecuteQuery(ExecuteStmt *execstmt, IntoClause *into, ExplainState *es,
  * returns a set of (name, statement, prepare_time, param_types, from_sql,
  * generic_plans, custom_plans).
  */
-Datum
-pg_prepared_statement(PG_FUNCTION_ARGS)
+Datum pg_prepared_statement(PG_FUNCTION_ARGS)
 {
-	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
+	ReturnSetInfo *rsinfo = (ReturnSetInfo *)fcinfo->resultinfo;
 
 	/*
 	 * We put all the tuples into a tuplestore in one scan of the hashtable.
@@ -683,9 +675,9 @@ pg_prepared_statement(PG_FUNCTION_ARGS)
 		hash_seq_init(&hash_seq, prepared_queries);
 		while ((prep_stmt = hash_seq_search(&hash_seq)) != NULL)
 		{
-			TupleDesc	result_desc;
-			Datum		values[8];
-			bool		nulls[8] = {0};
+			TupleDesc result_desc;
+			Datum values[8];
+			bool nulls[8] = {0};
 
 			result_desc = prep_stmt->plansource->resultDesc;
 
@@ -696,7 +688,7 @@ pg_prepared_statement(PG_FUNCTION_ARGS)
 											prep_stmt->plansource->num_params);
 			if (result_desc)
 			{
-				Oid		   *result_types;
+				Oid *result_types;
 
 				result_types = palloc_array(Oid, result_desc->natts);
 				for (int i = 0; i < result_desc->natts; i++)
@@ -717,7 +709,7 @@ pg_prepared_statement(PG_FUNCTION_ARGS)
 		}
 	}
 
-	return (Datum) 0;
+	return (Datum)0;
 }
 
 /*
@@ -728,9 +720,9 @@ pg_prepared_statement(PG_FUNCTION_ARGS)
 static Datum
 build_regtype_array(Oid *param_types, int num_params)
 {
-	Datum	   *tmp_ary;
-	ArrayType  *result;
-	int			i;
+	Datum *tmp_ary;
+	ArrayType *result;
+	int i;
 
 	tmp_ary = palloc_array(Datum, num_params);
 

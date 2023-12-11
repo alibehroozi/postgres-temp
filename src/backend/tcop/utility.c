@@ -3156,7 +3156,6 @@ CreateCommandTag(Node *parsetree)
 	case T_Query:
 	{
 		Query *stmt = (Query *)parsetree;
-		printf("T query type %i\n", stmt->commandType);
 		switch (stmt->commandType)
 		{
 		case CMD_SELECT:
