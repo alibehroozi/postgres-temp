@@ -128,10 +128,11 @@ void transformFromClause(ParseState *pstate, List *frmList)
 		Node *n = lfirst(fl);
 		ParseNamespaceItem *nsitem;
 		List *namespace;
-
 		n = transformFromClauseItem(pstate, n,
 									&nsitem,
 									&namespace);
+
+		printf("transformFromClause\n");
 
 		checkNameSpaceConflicts(pstate, pstate->p_namespace, namespace);
 
