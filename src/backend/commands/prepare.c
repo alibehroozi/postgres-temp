@@ -159,7 +159,7 @@ void ExecuteQuery(ParseState *pstate,
 	int eflags;
 	long count;
 
-	printf("1T query type %i\n", stmt->commandType);
+	printf("1T query type %i\n", stmt->name);
 
 	/* Look it up in the hash table */
 	entry = FetchPreparedStatement(stmt->name, true);
