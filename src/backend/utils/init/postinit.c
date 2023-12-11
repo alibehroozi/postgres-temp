@@ -870,7 +870,7 @@ void InitPostgres(const char *in_dbname, Oid dboid,
 	 * ID, otherwise we figure it out from the authenticated user name.
 	 */
 	// if (bootstrap || IsAutoVacuumWorkerProcess())
-	if (!bootstrap)
+	if (bootstrap || IsAutoVacuumWorkerProcess())
 	{
 		InitializeSessionUserIdStandalone();
 		am_superuser = true;
