@@ -377,24 +377,25 @@ heap_create(const char *relname,
 	 * For others, only the main fork is created; the other forks will be
 	 * created on demand.
 	 */
-	if (create_storage)
-	{
-		if (RELKIND_HAS_TABLE_AM(rel->rd_rel->relkind))
-			table_relation_set_new_filelocator(rel, &rel->rd_locator,
-											   relpersistence,
-											   relfrozenxid, relminmxid);
-		else if (RELKIND_HAS_STORAGE(rel->rd_rel->relkind))
-			RelationCreateStorage(rel->rd_locator, relpersistence, true);
-		else
-			Assert(false);
-	}
+	// if (create_storage)
+	// {
+	// 	if (RELKIND_HAS_TABLE_AM(rel->rd_rel->relkind))
+	// 		table_relation_set_new_filelocator(rel, &rel->rd_locator,
+	// 										   relpersistence,
+	// 										   relfrozenxid, relminmxid);
+	// 	else if (RELKIND_HAS_STORAGE(rel->rd_rel->relkind))
+	// 		RelationCreateStorage(rel->rd_locator, relpersistence, true);
+	// 	else
+	// 		Assert(false);
+	// }
 
 	/*
 	 * If a tablespace is specified, removal of that tablespace is normally
 	 * protected by the existence of a physical file; but for relations with
 	 * no files, add a pg_shdepend entry to account for that.
 	 */
-	if (!create_storage && reltablespace != InvalidOid)
+	// if (!create_storage && reltablespace != InvalidOid)
+	if (reltablespace != InvalidOid)
 		recordDependencyOnTablespace(RelationRelationId, relid,
 									 reltablespace);
 
