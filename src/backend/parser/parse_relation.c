@@ -1414,7 +1414,9 @@ parserOpenTable(ParseState *pstate, const RangeVar *relation, int lockmode)
 
 	setup_parser_errposition_callback(&pcbstate, pstate, relation->location);
 	rel = table_openrv_extended(relation, lockmode, true);
-	printf("parserOpenTable\n") if (rel == NULL)
+	printf("parserOpenTable\n");
+
+	if (rel == NULL)
 	{
 		if (relation->schemaname)
 			ereport(ERROR,
