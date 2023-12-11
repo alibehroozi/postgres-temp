@@ -764,45 +764,46 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	printf("fuck2");
 	/* This sets OuterUserId/CurrentUserId too */
 	SetSessionUserId(roleid, is_superuser);
+	printf("fuck999");
 
 	/* Also mark our PGPROC entry with the authenticated user id */
 	/* (We assume this is an atomic store so no lock is needed) */
 	MyProc->roleId = roleid;
 
-	/*
-	 * These next checks are not enforced when in standalone mode, so that
-	 * there is a way to recover from sillinesses like "UPDATE pg_authid SET
-	 * rolcanlogin = false;".
-	 */
-	if (IsUnderPostmaster)
-	{
-		/*
-		 * Is role allowed to login at all?
-		 */
-		if (!bypass_login_check && !rform->rolcanlogin)
-			ereport(FATAL,
-					(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-					 errmsg("role \"%s\" is not permitted to log in",
-							rname)));
+	// /*
+	//  * These next checks are not enforced when in standalone mode, so that
+	//  * there is a way to recover from sillinesses like "UPDATE pg_authid SET
+	//  * rolcanlogin = false;".
+	//  */
+	// if (IsUnderPostmaster)
+	// {
+	// 	/*
+	// 	 * Is role allowed to login at all?
+	// 	 */
+	// 	if (!bypass_login_check && !rform->rolcanlogin)
+	// 		ereport(FATAL,
+	// 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
+	// 				 errmsg("role \"%s\" is not permitted to log in",
+	// 						rname)));
 
-		/*
-		 * Check connection limit for this role.
-		 *
-		 * There is a race condition here --- we create our PGPROC before
-		 * checking for other PGPROCs.  If two backends did this at about the
-		 * same time, they might both think they were over the limit, while
-		 * ideally one should succeed and one fail.  Getting that to work
-		 * exactly seems more trouble than it is worth, however; instead we
-		 * just document that the connection limit is approximate.
-		 */
-		if (rform->rolconnlimit >= 0 &&
-			!is_superuser &&
-			CountUserBackends(roleid) > rform->rolconnlimit)
-			ereport(FATAL,
-					(errcode(ERRCODE_TOO_MANY_CONNECTIONS),
-					 errmsg("too many connections for role \"%s\"",
-							rname)));
-	}
+	// 	/*
+	// 	 * Check connection limit for this role.
+	// 	 *
+	// 	 * There is a race condition here --- we create our PGPROC before
+	// 	 * checking for other PGPROCs.  If two backends did this at about the
+	// 	 * same time, they might both think they were over the limit, while
+	// 	 * ideally one should succeed and one fail.  Getting that to work
+	// 	 * exactly seems more trouble than it is worth, however; instead we
+	// 	 * just document that the connection limit is approximate.
+	// 	 */
+	// 	if (rform->rolconnlimit >= 0 &&
+	// 		!is_superuser &&
+	// 		CountUserBackends(roleid) > rform->rolconnlimit)
+	// 		ereport(FATAL,
+	// 				(errcode(ERRCODE_TOO_MANY_CONNECTIONS),
+	// 				 errmsg("too many connections for role \"%s\"",
+	// 						rname)));
+	// }
 
 	/* Record username and superuser status as GUC settings too */
 	SetConfigOption("session_authorization", rname,
