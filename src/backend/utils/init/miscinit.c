@@ -728,6 +728,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
 				 errmsg("1role \"%s\" does not exist", rolename)));
 	}
+	printf("fuck1");
 	// if (rolename != NULL)
 	// {
 	// 	roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(rolename));
@@ -752,6 +753,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	AuthenticatedUserId = roleid;
 	is_superuser = rform->rolsuper;
 
+	printf("fuck2");
 	/* This sets OuterUserId/CurrentUserId too */
 	SetSessionUserId(roleid, is_superuser);
 
@@ -802,6 +804,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 					PGC_INTERNAL, PGC_S_DYNAMIC_DEFAULT);
 
 	// ReleaseSysCache(roleTup);
+	printf("fuck3");
 }
 
 /*
