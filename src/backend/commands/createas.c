@@ -53,14 +53,14 @@
 
 typedef struct
 {
-	DestReceiver pub;			/* publicly-known function pointers */
-	IntoClause *into;			/* target relation specification */
+	DestReceiver pub; /* publicly-known function pointers */
+	IntoClause *into; /* target relation specification */
 	/* These fields are filled by intorel_startup: */
-	Relation	rel;			/* relation to write to */
-	ObjectAddress reladdr;		/* address of rel, for ExecCreateTableAs */
-	CommandId	output_cid;		/* cmin to insert in output tuples */
-	int			ti_options;		/* table_tuple_insert performance options */
-	BulkInsertState bistate;	/* bulk insert state */
+	Relation rel;			 /* relation to write to */
+	ObjectAddress reladdr;	 /* address of rel, for ExecCreateTableAs */
+	CommandId output_cid;	 /* cmin to insert in output tuples */
+	int ti_options;			 /* table_tuple_insert performance options */
+	BulkInsertState bistate; /* bulk insert state */
 } DR_intorel;
 
 /* utility functions for CTAS definition creation */
@@ -73,7 +73,6 @@ static bool intorel_receive(TupleTableSlot *slot, DestReceiver *self);
 static void intorel_shutdown(DestReceiver *self);
 static void intorel_destroy(DestReceiver *self);
 
-
 /*
  * create_ctas_internal
  *
@@ -85,9 +84,9 @@ static ObjectAddress
 create_ctas_internal(List *attrList, IntoClause *into)
 {
 	CreateStmt *create = makeNode(CreateStmt);
-	bool		is_matview;
-	char		relkind;
-	Datum		toast_options;
+	bool is_matview;
+	char relkind;
+	Datum toast_options;
 	static char *validnsps[] = HEAP_RELOPT_NAMESPACES;
 	ObjectAddress intoRelationAddr;
 
@@ -124,13 +123,13 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	CommandCounterIncrement();
 
 	/* parse and validate reloptions for the toast table */
-	toast_options = transformRelOptions((Datum) 0,
+	toast_options = transformRelOptions((Datum)0,
 										create->options,
 										"toast",
 										validnsps,
 										true, false);
 
-	(void) heap_reloptions(RELKIND_TOASTVALUE, toast_options, true);
+	(void)heap_reloptions(RELKIND_TOASTVALUE, toast_options, true);
 
 	NewRelationCreateToastTable(intoRelationAddr.objectId, toast_options);
 
@@ -138,7 +137,7 @@ create_ctas_internal(List *attrList, IntoClause *into)
 	if (is_matview)
 	{
 		/* StoreViewQuery scribbles on tree, so make a copy */
-		Query	   *query = (Query *) copyObject(into->viewQuery);
+		Query *query = (Query *)copyObject(into->viewQuery);
 
 		StoreViewQuery(intoRelationAddr.objectId, query, false);
 		CommandCounterIncrement();
@@ -146,7 +145,6 @@ create_ctas_internal(List *attrList, IntoClause *into)
 
 	return intoRelationAddr;
 }
-
 
 /*
  * create_ctas_nodata
@@ -157,9 +155,9 @@ create_ctas_internal(List *attrList, IntoClause *into)
 static ObjectAddress
 create_ctas_nodata(List *tlist, IntoClause *into)
 {
-	List	   *attrList;
-	ListCell   *t,
-			   *lc;
+	List *attrList;
+	ListCell *t,
+		*lc;
 
 	/*
 	 * Build list of ColumnDefs from non-junk elements of the tlist.  If a
@@ -168,14 +166,14 @@ create_ctas_nodata(List *tlist, IntoClause *into)
 	 */
 	attrList = NIL;
 	lc = list_head(into->colNames);
-	foreach(t, tlist)
+	foreach (t, tlist)
 	{
-		TargetEntry *tle = (TargetEntry *) lfirst(t);
+		TargetEntry *tle = (TargetEntry *)lfirst(t);
 
 		if (!tle->resjunk)
 		{
-			ColumnDef  *col;
-			char	   *colname;
+			ColumnDef *col;
+			char *colname;
 
 			if (lc)
 			{
@@ -186,9 +184,9 @@ create_ctas_nodata(List *tlist, IntoClause *into)
 				colname = tle->resname;
 
 			col = makeColumnDef(colname,
-								exprType((Node *) tle->expr),
-								exprTypmod((Node *) tle->expr),
-								exprCollation((Node *) tle->expr));
+								exprType((Node *)tle->expr),
+								exprTypmod((Node *)tle->expr),
+								exprCollation((Node *)tle->expr));
 
 			/*
 			 * It's possible that the column is of a collatable type but the
@@ -218,7 +216,6 @@ create_ctas_nodata(List *tlist, IntoClause *into)
 	return create_ctas_internal(attrList, into);
 }
 
-
 /*
  * ExecCreateTableAs -- execute a CREATE TABLE AS command
  */
@@ -227,17 +224,17 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 				  ParamListInfo params, QueryEnvironment *queryEnv,
 				  QueryCompletion *qc)
 {
-	Query	   *query = castNode(Query, stmt->query);
+	Query *query = castNode(Query, stmt->query);
 	IntoClause *into = stmt->into;
-	bool		is_matview = (into->viewQuery != NULL);
+	bool is_matview = (into->viewQuery != NULL);
 	DestReceiver *dest;
-	Oid			save_userid = InvalidOid;
-	int			save_sec_context = 0;
-	int			save_nestlevel = 0;
+	Oid save_userid = InvalidOid;
+	int save_sec_context = 0;
+	int save_nestlevel = 0;
 	ObjectAddress address;
-	List	   *rewritten;
+	List *rewritten;
 	PlannedStmt *plan;
-	QueryDesc  *queryDesc;
+	QueryDesc *queryDesc;
 
 	/* Check if the relation exists or not */
 	if (CreateTableAsRelExists(stmt))
@@ -257,11 +254,11 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 	{
 		ExecuteStmt *estmt = castNode(ExecuteStmt, query->utilityStmt);
 
-		Assert(!is_matview);	/* excluded by syntax */
+		Assert(!is_matview); /* excluded by syntax */
 		ExecuteQuery(pstate, estmt, into, params, dest, qc);
 
 		/* get object address that intorel_startup saved for us */
-		address = ((DR_intorel *) dest)->reladdr;
+		address = ((DR_intorel *)dest)->reladdr;
 
 		return address;
 	}
@@ -305,8 +302,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 		/* SELECT should never rewrite to more or less than one SELECT query */
 		if (list_length(rewritten) != 1)
 			elog(ERROR, "unexpected rewrite result for %s",
-				 is_matview ? "CREATE MATERIALIZED VIEW" :
-				 "CREATE TABLE AS SELECT");
+				 is_matview ? "CREATE MATERIALIZED VIEW" : "CREATE TABLE AS SELECT");
 		query = linitial_node(Query, rewritten);
 		Assert(query->commandType == CMD_SELECT);
 
@@ -340,7 +336,7 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
 			SetQueryCompletion(qc, CMDTAG_SELECT, queryDesc->estate->es_processed);
 
 		/* get object address that intorel_startup saved for us */
-		address = ((DR_intorel *) dest)->reladdr;
+		address = ((DR_intorel *)dest)->reladdr;
 
 		/* and clean up */
 		ExecutorFinish(queryDesc);
@@ -371,10 +367,9 @@ ExecCreateTableAs(ParseState *pstate, CreateTableAsStmt *stmt,
  * use different methods for suppressing execution, it doesn't seem worth
  * trying to encapsulate that part.)
  */
-int
-GetIntoRelEFlags(IntoClause *intoClause)
+int GetIntoRelEFlags(IntoClause *intoClause)
 {
-	int			flags = 0;
+	int flags = 0;
 
 	if (intoClause->skipData)
 		flags |= EXEC_FLAG_WITH_NO_DATA;
@@ -389,11 +384,10 @@ GetIntoRelEFlags(IntoClause *intoClause)
  * CreateTableAsStmt query already exists or not.  Returns true if the
  * relation exists, otherwise false.
  */
-bool
-CreateTableAsRelExists(CreateTableAsStmt *ctas)
+bool CreateTableAsRelExists(CreateTableAsStmt *ctas)
 {
-	Oid			nspid;
-	Oid			oldrelid;
+	Oid nspid;
+	Oid oldrelid;
 	ObjectAddress address;
 	IntoClause *into = ctas->into;
 
@@ -405,7 +399,7 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 		if (!ctas->if_not_exists)
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_TABLE),
-					 errmsg("relation \"%s\" already exists",
+					 errmsg("1relation \"%s\" already exists",
 							into->rel->relname)));
 
 		/*
@@ -439,7 +433,7 @@ CreateTableAsRelExists(CreateTableAsStmt *ctas)
 DestReceiver *
 CreateIntoRelDestReceiver(IntoClause *intoClause)
 {
-	DR_intorel *self = (DR_intorel *) palloc0(sizeof(DR_intorel));
+	DR_intorel *self = (DR_intorel *)palloc0(sizeof(DR_intorel));
 
 	self->pub.receiveSlot = intorel_receive;
 	self->pub.rStartup = intorel_startup;
@@ -449,7 +443,7 @@ CreateIntoRelDestReceiver(IntoClause *intoClause)
 	self->into = intoClause;
 	/* other private fields will be set during intorel_startup */
 
-	return (DestReceiver *) self;
+	return (DestReceiver *)self;
 }
 
 /*
@@ -458,16 +452,16 @@ CreateIntoRelDestReceiver(IntoClause *intoClause)
 static void
 intorel_startup(DestReceiver *self, int operation, TupleDesc typeinfo)
 {
-	DR_intorel *myState = (DR_intorel *) self;
+	DR_intorel *myState = (DR_intorel *)self;
 	IntoClause *into = myState->into;
-	bool		is_matview;
-	List	   *attrList;
+	bool is_matview;
+	List *attrList;
 	ObjectAddress intoRelationAddr;
-	Relation	intoRelationDesc;
-	ListCell   *lc;
-	int			attnum;
+	Relation intoRelationDesc;
+	ListCell *lc;
+	int attnum;
 
-	Assert(into != NULL);		/* else somebody forgot to set it */
+	Assert(into != NULL); /* else somebody forgot to set it */
 
 	/* This code supports both CREATE TABLE AS and CREATE MATERIALIZED VIEW */
 	is_matview = (into->viewQuery != NULL);
@@ -483,8 +477,8 @@ intorel_startup(DestReceiver *self, int operation, TupleDesc typeinfo)
 	for (attnum = 0; attnum < typeinfo->natts; attnum++)
 	{
 		Form_pg_attribute attribute = TupleDescAttr(typeinfo, attnum);
-		ColumnDef  *col;
-		char	   *colname;
+		ColumnDef *col;
+		char *colname;
 
 		if (lc)
 		{
@@ -582,7 +576,7 @@ intorel_startup(DestReceiver *self, int operation, TupleDesc typeinfo)
 static bool
 intorel_receive(TupleTableSlot *slot, DestReceiver *self)
 {
-	DR_intorel *myState = (DR_intorel *) self;
+	DR_intorel *myState = (DR_intorel *)self;
 
 	/* Nothing to insert if WITH NO DATA is specified. */
 	if (!myState->into->skipData)
@@ -613,7 +607,7 @@ intorel_receive(TupleTableSlot *slot, DestReceiver *self)
 static void
 intorel_shutdown(DestReceiver *self)
 {
-	DR_intorel *myState = (DR_intorel *) self;
+	DR_intorel *myState = (DR_intorel *)self;
 	IntoClause *into = myState->into;
 
 	if (!into->skipData)
