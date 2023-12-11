@@ -271,6 +271,7 @@ transformTopLevelStmt(ParseState *pstate, RawStmt *parseTree)
 static Query *
 transformOptionalSelectInto(ParseState *pstate, Node *parseTree)
 {
+	printf("transformOptionalSelectInto\n");
 	if (IsA(parseTree, SelectStmt))
 	{
 		SelectStmt *stmt = (SelectStmt *)parseTree;
