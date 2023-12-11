@@ -856,7 +856,6 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 					Node **sql_body_out,
 					const char *queryString)
 {
-	printf("interpret_AS_clause query string\n");
 	if (!sql_body_in && !as)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),

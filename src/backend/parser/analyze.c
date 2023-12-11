@@ -310,6 +310,8 @@ transformOptionalSelectInto(ParseState *pstate, Node *parseTree)
 Query *
 transformStmt(ParseState *pstate, Node *parseTree)
 {
+	printf("transformStmt\n");
+
 	Query *result;
 
 	/*
