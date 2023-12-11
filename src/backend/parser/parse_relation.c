@@ -1487,6 +1487,7 @@ addRangeTableEntry(ParseState *pstate,
 	 */
 	lockmode = isLockedRefname(pstate, refname) ? RowShareLock : AccessShareLock;
 
+	printf("addRangeTableEntry\n");
 	/*
 	 * Get the rel's OID.  This access also ensures that we have an up-to-date
 	 * relcache entry for the rel.  Since this is typically the first access

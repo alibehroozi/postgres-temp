@@ -195,7 +195,6 @@ int setTargetTable(ParseState *pstate, RangeVar *relation,
 	if (pstate->p_target_relation != NULL)
 		table_close(pstate->p_target_relation, NoLock);
 
-	printf("setTargetTable\n");
 	/*
 	 * Open target rel and grab suitable lock (which we will hold till end of
 	 * transaction).
