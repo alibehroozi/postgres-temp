@@ -801,7 +801,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 					is_superuser ? "on" : "off",
 					PGC_INTERNAL, PGC_S_DYNAMIC_DEFAULT);
 
-	ReleaseSysCache(roleTup);
+	// ReleaseSysCache(roleTup);
 }
 
 /*
