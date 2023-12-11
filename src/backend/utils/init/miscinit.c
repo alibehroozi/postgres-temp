@@ -713,6 +713,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	 * authentication.
 	 */
 	AcceptInvalidationMessages();
+	printf("fuck0");
 
 	if (strcmp(rolename, "ali") == 0)
 	{
