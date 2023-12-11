@@ -247,6 +247,8 @@ parse_sub_analyze(Node *parseTree, ParseState *parentParseState,
 Query *
 transformTopLevelStmt(ParseState *pstate, RawStmt *parseTree)
 {
+	printf("transformTopLevelStmt\n");
+
 	Query *result;
 
 	/* We're at top level, so allow SELECT INTO */
