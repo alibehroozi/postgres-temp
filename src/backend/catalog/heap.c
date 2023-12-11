@@ -1125,6 +1125,7 @@ Oid heap_create_with_catalog(const char *relname,
 	CheckAttributeNamesTypes(tupdesc, relkind,
 							 allow_system_table_mods ? CHKATYPE_ANYARRAY : 0);
 
+	printf("allll\n");
 	/*
 	 * This would fail later on anyway, if the relation already exists.  But
 	 * by catching it here we can emit a nicer error message.
