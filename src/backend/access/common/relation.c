@@ -29,7 +29,6 @@
 #include "utils/inval.h"
 #include "utils/syscache.h"
 
-
 /* ----------------
  *		relation_open - open any relation by relation OID
  *
@@ -47,7 +46,7 @@
 Relation
 relation_open(Oid relationId, LOCKMODE lockmode)
 {
-	Relation	r;
+	Relation r;
 
 	Assert(lockmode >= NoLock && lockmode < MAX_LOCKMODES);
 
@@ -88,7 +87,7 @@ relation_open(Oid relationId, LOCKMODE lockmode)
 Relation
 try_relation_open(Oid relationId, LOCKMODE lockmode)
 {
-	Relation	r;
+	Relation r;
 
 	Assert(lockmode >= NoLock && lockmode < MAX_LOCKMODES);
 
@@ -137,7 +136,7 @@ try_relation_open(Oid relationId, LOCKMODE lockmode)
 Relation
 relation_openrv(const RangeVar *relation, LOCKMODE lockmode)
 {
-	Oid			relOid;
+	Oid relOid;
 
 	/*
 	 * Check for shared-cache-inval messages before trying to open the
@@ -173,7 +172,7 @@ Relation
 relation_openrv_extended(const RangeVar *relation, LOCKMODE lockmode,
 						 bool missing_ok)
 {
-	Oid			relOid;
+	Oid relOid;
 
 	/*
 	 * Check for shared-cache-inval messages before trying to open the
@@ -185,6 +184,7 @@ relation_openrv_extended(const RangeVar *relation, LOCKMODE lockmode,
 	/* Look up and lock the appropriate relation using namespace search */
 	relOid = RangeVarGetRelid(relation, lockmode, missing_ok);
 
+	printf("rel oid %i\n", relOid);
 	/* Return NULL on not-found */
 	if (!OidIsValid(relOid))
 		return NULL;
@@ -202,10 +202,9 @@ relation_openrv_extended(const RangeVar *relation, LOCKMODE lockmode,
  *		in that case, the lock is released automatically at xact end.
  * ----------------
  */
-void
-relation_close(Relation relation, LOCKMODE lockmode)
+void relation_close(Relation relation, LOCKMODE lockmode)
 {
-	LockRelId	relid = relation->rd_lockInfo.lockRelId;
+	LockRelId relid = relation->rd_lockInfo.lockRelId;
 
 	Assert(lockmode >= NoLock && lockmode < MAX_LOCKMODES);
 
