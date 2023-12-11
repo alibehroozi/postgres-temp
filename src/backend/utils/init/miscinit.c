@@ -694,7 +694,7 @@ bool has_rolreplication(Oid roleid)
 void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login_check)
 {
 	HeapTuple roleTup;
-	Form_pg_authid rform = (Form_pg_authid *) palloc(sizeof(Form_pg_authid);
+	Form_pg_authid rform = (Form_pg_authid *)palloc(sizeof(Form_pg_authid));
 	char *rname;
 	bool is_superuser;
 
@@ -740,7 +740,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	printf("fuck1");
 	// if (rolename != NULL)
 	// {
-		// roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(rolename));
+	// roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(rolename));
 	// 	if (!HeapTupleIsValid(roleTup))
 	// 		ereport(FATAL,
 	// 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
