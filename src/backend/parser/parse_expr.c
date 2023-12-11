@@ -3646,8 +3646,6 @@ transformJsonArrayQueryConstructor(ParseState *pstate,
 	Query *query;
 	ParseState *qpstate;
 
-	printf("transformJsonArrayQueryConstructor query string\n");
-
 	/* Transform query only for counting target list entries. */
 	qpstate = make_parsestate(pstate);
 
