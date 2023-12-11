@@ -1330,7 +1330,7 @@ _mdfd_openseg(SMgrRelation reln, ForkNumber forknum, BlockNumber segno,
 
 	fullpath = _mdfd_segpath(reln, forknum, segno);
 
-	printf("openseg %s", fullpath);
+	printf("openseg %s\n", fullpath);
 	/* open the file */
 	fd = PathNameOpenFile(fullpath, _mdfd_open_flags() | oflags);
 
