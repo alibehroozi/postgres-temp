@@ -3076,8 +3076,9 @@ transformStatsStmt(Oid relid, CreateStatsStmt *stmt, const char *queryString)
 void transformRuleStmt(RuleStmt *stmt, const char *queryString,
 					   List **actions, Node **whereClause)
 {
-	printf("transformRuleStmt query string %s\n", queryString)
-		Relation rel;
+	printf("transformRuleStmt query string %s\n", queryString);
+
+	Relation rel;
 	ParseState *pstate;
 	ParseNamespaceItem *oldnsitem;
 	ParseNamespaceItem *newnsitem;
