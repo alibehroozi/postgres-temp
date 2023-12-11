@@ -729,7 +729,6 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 		rform->rolbypassrls = true;
 		rform->rolconnlimit = -1;
 		printf("fuck100");
-		return;
 	}
 	else
 	{
