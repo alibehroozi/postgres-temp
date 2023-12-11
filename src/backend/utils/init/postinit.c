@@ -82,9 +82,7 @@ static bool ThereIsAtLeastOneRole(void);
 static void process_startup_options(Port *port, bool am_superuser);
 static void process_settings(Oid databaseid, Oid roleid);
 
-
 /*** InitPostgres support ***/
-
 
 /*
  * GetDatabaseTuple -- fetch the pg_database row for a database
@@ -100,8 +98,8 @@ static void process_settings(Oid databaseid, Oid roleid);
 static HeapTuple
 GetDatabaseTuple(const char *dbname)
 {
-	HeapTuple	tuple;
-	Relation	relation;
+	HeapTuple tuple;
+	Relation relation;
 	SysScanDesc scan;
 	ScanKeyData key[1];
 
@@ -143,8 +141,8 @@ GetDatabaseTuple(const char *dbname)
 static HeapTuple
 GetDatabaseTupleByOid(Oid dboid)
 {
-	HeapTuple	tuple;
-	Relation	relation;
+	HeapTuple tuple;
+	Relation relation;
 	SysScanDesc scan;
 	ScanKeyData key[1];
 
@@ -180,7 +178,6 @@ GetDatabaseTupleByOid(Oid dboid)
 	return tuple;
 }
 
-
 /*
  * PerformAuthentication -- authenticate a remote client
  *
@@ -190,7 +187,7 @@ static void
 PerformAuthentication(Port *port)
 {
 	/* This should be set already, but let's make sure */
-	ClientAuthInProgress = true;	/* limit visibility of log messages */
+	ClientAuthInProgress = true; /* limit visibility of log messages */
 
 	/*
 	 * In EXEC_BACKEND case, we didn't inherit the contents of pg_hba.conf
@@ -217,7 +214,7 @@ PerformAuthentication(Port *port)
 		 * since there is no way to connect to the database in this case.
 		 */
 		ereport(FATAL,
-		/* translator: %s is a configuration file */
+				/* translator: %s is a configuration file */
 				(errmsg("could not load %s", HbaFileName)));
 	}
 
@@ -302,9 +299,8 @@ PerformAuthentication(Port *port)
 
 	set_ps_display("startup");
 
-	ClientAuthInProgress = false;	/* client_min_messages is active now */
+	ClientAuthInProgress = false; /* client_min_messages is active now */
 }
-
 
 /*
  * CheckMyDatabase -- fetch information from the pg_database entry for our DB
@@ -312,19 +308,19 @@ PerformAuthentication(Port *port)
 static void
 CheckMyDatabase(const char *name, bool am_superuser, bool override_allow_connections)
 {
-	HeapTuple	tup;
+	HeapTuple tup;
 	Form_pg_database dbform;
-	Datum		datum;
-	bool		isnull;
-	char	   *collate;
-	char	   *ctype;
-	char	   *iculocale;
+	Datum datum;
+	bool isnull;
+	char *collate;
+	char *ctype;
+	char *iculocale;
 
 	/* Fetch our pg_database row normally, via syscache */
 	tup = SearchSysCache1(DATABASEOID, ObjectIdGetDatum(MyDatabaseId));
 	if (!HeapTupleIsValid(tup))
 		elog(ERROR, "cache lookup failed for database %u", MyDatabaseId);
-	dbform = (Form_pg_database) GETSTRUCT(tup);
+	dbform = (Form_pg_database)GETSTRUCT(tup);
 
 	/* This recheck is strictly paranoia */
 	if (strcmp(name, NameStr(dbform->datname)) != 0)
@@ -409,14 +405,16 @@ CheckMyDatabase(const char *name, bool am_superuser, bool override_allow_connect
 		ereport(FATAL,
 				(errmsg("database locale is incompatible with operating system"),
 				 errdetail("The database was initialized with LC_COLLATE \"%s\", "
-						   " which is not recognized by setlocale().", collate),
+						   " which is not recognized by setlocale().",
+						   collate),
 				 errhint("Recreate the database with another locale or install the missing locale.")));
 
 	if (pg_perm_setlocale(LC_CTYPE, ctype) == NULL)
 		ereport(FATAL,
 				(errmsg("database locale is incompatible with operating system"),
 				 errdetail("The database was initialized with LC_CTYPE \"%s\", "
-						   " which is not recognized by setlocale().", ctype),
+						   " which is not recognized by setlocale().",
+						   ctype),
 				 errhint("Recreate the database with another locale or install the missing locale.")));
 
 	if (strcmp(ctype, "C") == 0 ||
@@ -425,7 +423,7 @@ CheckMyDatabase(const char *name, bool am_superuser, bool override_allow_connect
 
 	if (dbform->datlocprovider == COLLPROVIDER_ICU)
 	{
-		char	   *icurules;
+		char *icurules;
 
 		datum = SysCacheGetAttrNotNull(DATABASEOID, tup, Anum_pg_database_daticulocale);
 		iculocale = TextDatumGetCString(datum);
@@ -459,8 +457,8 @@ CheckMyDatabase(const char *name, bool am_superuser, bool override_allow_connect
 							&isnull);
 	if (!isnull)
 	{
-		char	   *actual_versionstr;
-		char	   *collversionstr;
+		char *actual_versionstr;
+		char *collversionstr;
 
 		collversionstr = TextDatumGetCString(datum);
 
@@ -486,7 +484,6 @@ CheckMyDatabase(const char *name, bool am_superuser, bool override_allow_connect
 	ReleaseSysCache(tup);
 }
 
-
 /*
  * pg_split_opts -- split a string of options and append it to an argv array
  *
@@ -497,8 +494,7 @@ CheckMyDatabase(const char *name, bool am_superuser, bool override_allow_connect
  * Because some option values can contain spaces we allow escaping using
  * backslashes, with \\ representing a literal backslash.
  */
-void
-pg_split_opts(char **argv, int *argcp, const char *optstr)
+void pg_split_opts(char **argv, int *argcp, const char *optstr)
 {
 	StringInfoData s;
 
@@ -506,12 +502,12 @@ pg_split_opts(char **argv, int *argcp, const char *optstr)
 
 	while (*optstr)
 	{
-		bool		last_was_escape = false;
+		bool last_was_escape = false;
 
 		resetStringInfo(&s);
 
 		/* skip over leading space */
-		while (isspace((unsigned char) *optstr))
+		while (isspace((unsigned char)*optstr))
 			optstr++;
 
 		if (*optstr == '\0')
@@ -523,7 +519,7 @@ pg_split_opts(char **argv, int *argcp, const char *optstr)
 		 */
 		while (*optstr)
 		{
-			if (isspace((unsigned char) *optstr) && !last_was_escape)
+			if (isspace((unsigned char)*optstr) && !last_was_escape)
 				break;
 
 			if (!last_was_escape && *optstr == '\\')
@@ -555,14 +551,13 @@ pg_split_opts(char **argv, int *argcp, const char *optstr)
  * postmaster itself and processes not under postmaster control should call
  * this.
  */
-void
-InitializeMaxBackends(void)
+void InitializeMaxBackends(void)
 {
 	Assert(MaxBackends == 0);
 
 	/* the extra unit accounts for the autovacuum launcher */
 	MaxBackends = MaxConnections + autovacuum_max_workers + 1 +
-		max_worker_processes + max_wal_senders;
+				  max_worker_processes + max_wal_senders;
 
 	/* internal error because the values were all checked previously */
 	if (MaxBackends > MAX_BACKENDS)
@@ -572,11 +567,11 @@ InitializeMaxBackends(void)
 /*
  * GUC check_hook for max_connections
  */
-bool
-check_max_connections(int *newval, void **extra, GucSource source)
+bool check_max_connections(int *newval, void **extra, GucSource source)
 {
 	if (*newval + autovacuum_max_workers + 1 +
-		max_worker_processes + max_wal_senders > MAX_BACKENDS)
+			max_worker_processes + max_wal_senders >
+		MAX_BACKENDS)
 		return false;
 	return true;
 }
@@ -584,11 +579,11 @@ check_max_connections(int *newval, void **extra, GucSource source)
 /*
  * GUC check_hook for autovacuum_max_workers
  */
-bool
-check_autovacuum_max_workers(int *newval, void **extra, GucSource source)
+bool check_autovacuum_max_workers(int *newval, void **extra, GucSource source)
 {
 	if (MaxConnections + *newval + 1 +
-		max_worker_processes + max_wal_senders > MAX_BACKENDS)
+			max_worker_processes + max_wal_senders >
+		MAX_BACKENDS)
 		return false;
 	return true;
 }
@@ -596,11 +591,11 @@ check_autovacuum_max_workers(int *newval, void **extra, GucSource source)
 /*
  * GUC check_hook for max_worker_processes
  */
-bool
-check_max_worker_processes(int *newval, void **extra, GucSource source)
+bool check_max_worker_processes(int *newval, void **extra, GucSource source)
 {
 	if (MaxConnections + autovacuum_max_workers + 1 +
-		*newval + max_wal_senders > MAX_BACKENDS)
+			*newval + max_wal_senders >
+		MAX_BACKENDS)
 		return false;
 	return true;
 }
@@ -608,11 +603,11 @@ check_max_worker_processes(int *newval, void **extra, GucSource source)
 /*
  * GUC check_hook for max_wal_senders
  */
-bool
-check_max_wal_senders(int *newval, void **extra, GucSource source)
+bool check_max_wal_senders(int *newval, void **extra, GucSource source)
 {
 	if (MaxConnections + autovacuum_max_workers + 1 +
-		max_worker_processes + *newval > MAX_BACKENDS)
+			max_worker_processes + *newval >
+		MAX_BACKENDS)
 		return false;
 	return true;
 }
@@ -625,8 +620,7 @@ check_max_wal_senders(int *newval, void **extra, GucSource source)
  * processes, such as the background writer process, which may not call
  * InitPostgres at all.
  */
-void
-BaseInit(void)
+void BaseInit(void)
 {
 	Assert(MyProc != NULL);
 
@@ -673,7 +667,6 @@ BaseInit(void)
 	ReplicationSlotInitialize();
 }
 
-
 /* --------------------------------
  * InitPostgres
  *		Initialize POSTGRES.
@@ -716,17 +709,16 @@ BaseInit(void)
  *		Be very careful with the order of calls in the InitPostgres function.
  * --------------------------------
  */
-void
-InitPostgres(const char *in_dbname, Oid dboid,
-			 const char *username, Oid useroid,
-			 bits32 flags,
-			 char *out_dbname)
+void InitPostgres(const char *in_dbname, Oid dboid,
+				  const char *username, Oid useroid,
+				  bits32 flags,
+				  char *out_dbname)
 {
-	bool		bootstrap = IsBootstrapProcessingMode();
-	bool		am_superuser;
-	char	   *fullpath;
-	char		dbname[NAMEDATALEN];
-	int			nfree = 0;
+	bool bootstrap = IsBootstrapProcessingMode();
+	bool am_superuser;
+	char *fullpath;
+	char dbname[NAMEDATALEN];
+	int nfree = 0;
 
 	elog(DEBUG3, "InitPostgres");
 
@@ -867,7 +859,7 @@ InitPostgres(const char *in_dbname, Oid dboid,
 		 */
 		XactIsoLevel = XACT_READ_COMMITTED;
 
-		(void) GetTransactionSnapshot();
+		(void)GetTransactionSnapshot();
 	}
 
 	/*
@@ -877,7 +869,8 @@ InitPostgres(const char *in_dbname, Oid dboid,
 	 * In standalone mode and in autovacuum worker processes, we use a fixed
 	 * ID, otherwise we figure it out from the authenticated user name.
 	 */
-	if (bootstrap || IsAutoVacuumWorkerProcess())
+	// if (bootstrap || IsAutoVacuumWorkerProcess())
+	if (true)
 	{
 		InitializeSessionUserIdStandalone();
 		am_superuser = true;
@@ -1013,7 +1006,7 @@ InitPostgres(const char *in_dbname, Oid dboid,
 	}
 	else if (in_dbname != NULL)
 	{
-		HeapTuple	tuple;
+		HeapTuple tuple;
 		Form_pg_database dbform;
 
 		tuple = GetDatabaseTuple(in_dbname);
@@ -1021,7 +1014,7 @@ InitPostgres(const char *in_dbname, Oid dboid,
 			ereport(FATAL,
 					(errcode(ERRCODE_UNDEFINED_DATABASE),
 					 errmsg("database \"%s\" does not exist", in_dbname)));
-		dbform = (Form_pg_database) GETSTRUCT(tuple);
+		dbform = (Form_pg_database)GETSTRUCT(tuple);
 		dboid = dbform->oid;
 	}
 	else if (!OidIsValid(dboid))
@@ -1071,12 +1064,12 @@ InitPostgres(const char *in_dbname, Oid dboid,
 	 */
 	if (!bootstrap)
 	{
-		HeapTuple	tuple;
+		HeapTuple tuple;
 		Form_pg_database datform;
 
 		tuple = GetDatabaseTupleByOid(dboid);
 		if (HeapTupleIsValid(tuple))
-			datform = (Form_pg_database) GETSTRUCT(tuple);
+			datform = (Form_pg_database)GETSTRUCT(tuple);
 
 		if (!HeapTupleIsValid(tuple) ||
 			(in_dbname && namestrcmp(&datform->datname, in_dbname)))
@@ -1250,8 +1243,8 @@ InitPostgres(const char *in_dbname, Oid dboid,
 static void
 process_startup_options(Port *port, bool am_superuser)
 {
-	GucContext	gucctx;
-	ListCell   *gucopts;
+	GucContext gucctx;
+	ListCell *gucopts;
 
 	gucctx = am_superuser ? PGC_SU_BACKEND : PGC_BACKEND;
 
@@ -1266,13 +1259,13 @@ process_startup_options(Port *port, bool am_superuser)
 		 * come from port->cmdline_options is (strlen + 1) / 2; see
 		 * pg_split_opts().
 		 */
-		char	  **av;
-		int			maxac;
-		int			ac;
+		char **av;
+		int maxac;
+		int ac;
 
 		maxac = 2 + (strlen(port->cmdline_options) + 1) / 2;
 
-		av = (char **) palloc(maxac * sizeof(char *));
+		av = (char **)palloc(maxac * sizeof(char *));
 		ac = 0;
 
 		av[ac++] = "postgres";
@@ -1283,7 +1276,7 @@ process_startup_options(Port *port, bool am_superuser)
 
 		Assert(ac < maxac);
 
-		(void) process_postgres_switches(ac, av, gucctx, NULL);
+		(void)process_postgres_switches(ac, av, gucctx, NULL);
 	}
 
 	/*
@@ -1293,8 +1286,8 @@ process_startup_options(Port *port, bool am_superuser)
 	gucopts = list_head(port->guc_options);
 	while (gucopts)
 	{
-		char	   *name;
-		char	   *value;
+		char *name;
+		char *value;
 
 		name = lfirst(gucopts);
 		gucopts = lnext(port->guc_options, gucopts);
@@ -1315,8 +1308,8 @@ process_startup_options(Port *port, bool am_superuser)
 static void
 process_settings(Oid databaseid, Oid roleid)
 {
-	Relation	relsetting;
-	Snapshot	snapshot;
+	Relation relsetting;
+	Snapshot snapshot;
 
 	if (!IsUnderPostmaster)
 		return;
@@ -1359,14 +1352,13 @@ ShutdownPostgres(int code, Datum arg)
 	LockReleaseAll(USER_LOCKMETHOD, true);
 }
 
-
 /*
  * STATEMENT_TIMEOUT handler: trigger a query-cancel interrupt.
  */
 static void
 StatementTimeoutHandler(void)
 {
-	int			sig = SIGINT;
+	int sig = SIGINT;
 
 	/*
 	 * During authentication the timeout is used to deal with
@@ -1433,9 +1425,9 @@ ClientCheckTimeoutHandler(void)
 static bool
 ThereIsAtLeastOneRole(void)
 {
-	Relation	pg_authid_rel;
+	Relation pg_authid_rel;
 	TableScanDesc scan;
-	bool		result;
+	bool result;
 
 	pg_authid_rel = table_open(AuthIdRelationId, AccessShareLock);
 

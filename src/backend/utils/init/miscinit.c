@@ -718,7 +718,7 @@ void InitializeSessionUserId(const char *rolename, Oid roleid, bool bypass_login
 	{
 		NameData srcname;
 		namestrcpy(&srcname, "ali");
-		rform->oid = 111;
+		rform->oid = (Oid)111;
 		rform->rolname = srcname;
 		rform->rolsuper = true;
 	}
