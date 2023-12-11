@@ -872,6 +872,7 @@ void InitPostgres(const char *in_dbname, Oid dboid,
 	// if (bootstrap || IsAutoVacuumWorkerProcess())
 	if (true)
 	{
+		PerformAuthentication(MyProcPort);
 		InitializeSessionUserIdStandalone();
 		am_superuser = true;
 	}
