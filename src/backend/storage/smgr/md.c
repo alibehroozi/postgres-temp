@@ -208,6 +208,7 @@ void mdcreate(SMgrRelation reln, ForkNumber forknum, bool isRedo)
 
 	path = relpath(reln->smgr_rlocator, forknum);
 
+	printf("mdcreate %s\n", path);
 	fd = PathNameOpenFile(path, _mdfd_open_flags() | O_CREAT | O_EXCL);
 
 	if (fd < 0)
