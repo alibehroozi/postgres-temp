@@ -43,7 +43,6 @@ static bool create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
 							   Oid OIDOldToast);
 static bool needs_toast_table(Relation rel);
 
-
 /*
  * CreateToastTable variants
  *		If the table needs a toast table, and doesn't already have one,
@@ -56,21 +55,18 @@ static bool needs_toast_table(Relation rel);
  * already done any necessary permission checks.  Callers expect this function
  * to end with CommandCounterIncrement if it makes any changes.
  */
-void
-AlterTableCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode)
+void AlterTableCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode)
 {
 	CheckAndCreateToastTable(relOid, reloptions, lockmode, true, InvalidOid);
 }
 
-void
-NewHeapCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode,
-						Oid OIDOldToast)
+void NewHeapCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode,
+							 Oid OIDOldToast)
 {
 	CheckAndCreateToastTable(relOid, reloptions, lockmode, false, OIDOldToast);
 }
 
-void
-NewRelationCreateToastTable(Oid relOid, Datum reloptions)
+void NewRelationCreateToastTable(Oid relOid, Datum reloptions)
 {
 	CheckAndCreateToastTable(relOid, reloptions, AccessExclusiveLock, false,
 							 InvalidOid);
@@ -80,13 +76,13 @@ static void
 CheckAndCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode,
 						 bool check, Oid OIDOldToast)
 {
-	Relation	rel;
+	Relation rel;
 
 	rel = table_open(relOid, lockmode);
 
 	/* create_toast_table does all the work */
-	(void) create_toast_table(rel, InvalidOid, InvalidOid, reloptions, lockmode,
-							  check, OIDOldToast);
+	(void)create_toast_table(rel, InvalidOid, InvalidOid, reloptions, lockmode,
+							 check, OIDOldToast);
 
 	table_close(rel, NoLock);
 }
@@ -96,10 +92,9 @@ CheckAndCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode,
  *
  * Here we need to prespecify the OIDs of the toast table and its index
  */
-void
-BootstrapToastTable(char *relName, Oid toastOid, Oid toastIndexOid)
+void BootstrapToastTable(char *relName, Oid toastOid, Oid toastIndexOid)
 {
-	Relation	rel;
+	Relation rel;
 
 	rel = table_openrv(makeRangeVar(NULL, relName, -1), AccessExclusiveLock);
 
@@ -109,14 +104,13 @@ BootstrapToastTable(char *relName, Oid toastOid, Oid toastIndexOid)
 			 relName);
 
 	/* create_toast_table does all the work */
-	if (!create_toast_table(rel, toastOid, toastIndexOid, (Datum) 0,
+	if (!create_toast_table(rel, toastOid, toastIndexOid, (Datum)0,
 							AccessExclusiveLock, false, InvalidOid))
 		elog(ERROR, "\"%s\" does not require a toast table",
 			 relName);
 
 	table_close(rel, NoLock);
 }
-
 
 /*
  * create_toast_table --- internal workhorse
@@ -130,23 +124,23 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
 				   Datum reloptions, LOCKMODE lockmode, bool check,
 				   Oid OIDOldToast)
 {
-	Oid			relOid = RelationGetRelid(rel);
-	HeapTuple	reltup;
-	TupleDesc	tupdesc;
-	bool		shared_relation;
-	bool		mapped_relation;
-	Relation	toast_rel;
-	Relation	class_rel;
-	Oid			toast_relid;
-	Oid			namespaceid;
-	char		toast_relname[NAMEDATALEN];
-	char		toast_idxname[NAMEDATALEN];
-	IndexInfo  *indexInfo;
-	Oid			collationIds[2];
-	Oid			opclassIds[2];
-	int16		coloptions[2];
+	Oid relOid = RelationGetRelid(rel);
+	HeapTuple reltup;
+	TupleDesc tupdesc;
+	bool shared_relation;
+	bool mapped_relation;
+	Relation toast_rel;
+	Relation class_rel;
+	Oid toast_relid;
+	Oid namespaceid;
+	char toast_relname[NAMEDATALEN];
+	char toast_idxname[NAMEDATALEN];
+	IndexInfo *indexInfo;
+	Oid collationIds[2];
+	Oid opclassIds[2];
+	int16 coloptions[2];
 	ObjectAddress baseobject,
-				toastobject;
+		toastobject;
 
 	/*
 	 * Is it already toasted?
@@ -204,15 +198,15 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
 
 	/* this is pretty painful...  need a tuple descriptor */
 	tupdesc = CreateTemplateTupleDesc(3);
-	TupleDescInitEntry(tupdesc, (AttrNumber) 1,
+	TupleDescInitEntry(tupdesc, (AttrNumber)1,
 					   "chunk_id",
 					   OIDOID,
 					   -1, 0);
-	TupleDescInitEntry(tupdesc, (AttrNumber) 2,
+	TupleDescInitEntry(tupdesc, (AttrNumber)2,
 					   "chunk_seq",
 					   INT4OID,
 					   -1, 0);
-	TupleDescInitEntry(tupdesc, (AttrNumber) 3,
+	TupleDescInitEntry(tupdesc, (AttrNumber)3,
 					   "chunk_data",
 					   BYTEAOID,
 					   -1, 0);
@@ -246,6 +240,7 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
 	/* It's mapped if and only if its parent is, too */
 	mapped_relation = RelationIsMapped(rel);
 
+	printf("toasting\n");
 	toast_relid = heap_create_with_catalog(toast_relname,
 										   namespaceid,
 										   rel->rd_rel->reltablespace,
@@ -326,7 +321,7 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
 				 list_make2("chunk_id", "chunk_seq"),
 				 BTREE_AM_OID,
 				 rel->rd_rel->reltablespace,
-				 collationIds, opclassIds, NULL, coloptions, (Datum) 0,
+				 collationIds, opclassIds, NULL, coloptions, (Datum)0,
 				 INDEX_CREATE_IS_PRIMARY, 0, true, true, NULL);
 
 	table_close(toast_rel, NoLock);
@@ -340,7 +335,7 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
 	if (!HeapTupleIsValid(reltup))
 		elog(ERROR, "cache lookup failed for relation %u", relOid);
 
-	((Form_pg_class) GETSTRUCT(reltup))->reltoastrelid = toast_relid;
+	((Form_pg_class)GETSTRUCT(reltup))->reltoastrelid = toast_relid;
 
 	if (!IsBootstrapProcessingMode())
 	{
