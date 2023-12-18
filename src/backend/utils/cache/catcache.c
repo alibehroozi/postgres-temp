@@ -1389,7 +1389,7 @@ SearchCatCacheMiss(CatCache *cache,
 	 * This case is rare enough that it's not worth expending extra cycles to
 	 * detect.
 	 */
-	printf("cache miss for old %d\n", &cache->cc_reloid);
+	printf("cache miss for old %i\n", &cache->cc_reloid);
 
 	relation = table_open(cache->cc_reloid, AccessShareLock);
 
